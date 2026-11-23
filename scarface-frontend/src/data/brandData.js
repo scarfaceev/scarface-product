@@ -6,7 +6,7 @@ export const brand = {
   logo: { light: logoLight, onDark: null, alt: "ScarfaceEV Solutions logo" },
   contact: { email: " email – Info@scarfaceev.com ", phone: " phone – 8790009063 ", address: " address – Warangal Highway, Medchal Malkajgiri,Hyderabad - 500088 " },
   social: [{ label: "Instagram", href: "#" }, { label: "LinkedIn", href: "#" }, { label: "YouTube", href: "#" }],
-  hero: { title: ["Power Your Journey.", "Charge Smarter."], text: "ScarfaceEV designs intelligent EV charging solutions for homes and businesses – built to make every journey simpler, smarter and more convenient.", ctas: [{ label: "Explore Our Chargers", href: "#chargers" }, { label: "Talk to Our Team", href: "#contact" }] },
+  hero: { title: ["Build In Silence", "Driven By Power"], text: "ScarfaceEV designs intelligent EV charging solutions for homes and businesses – built to make every journey simpler, smarter and more convenient.", ctas: [{ label: "Explore Our Chargers", href: "#chargers" }, { label: "Talk to Our Team", href: "#contact" }] },
   cta: { title: "Ready to Charge Smarter?", text: "Explore intelligent charging solutions with ScarfaceEV and take the next step toward a smarter electric future." },
   interests: ["Home charger", "Commercial charger", "Consultation", "Maintenance & support", "Other"],
 };

@@ -228,7 +228,7 @@ nav.d button:hover,nav.d button.on,nav.d button.cur{
     linear-gradient(0deg,rgba(7,19,29,.82),transparent 55%);
 }
 .hc h1{max-width:820px;text-shadow:0 16px 50px rgba(0,0,0,.28)}
-.hc h1 span{color:var(--bright-cyan)}
+.hc h1 span{color:var(--bright-cyan);font-size:.72em}
 .hc p{color:#D3DEE6}
 .hfoot{color:#9DB2BF}
 
