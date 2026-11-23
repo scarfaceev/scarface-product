@@ -1,20 +1,28 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Menu, X, ArrowRight, Plus, Minus } from "lucide-react";
 import { nav } from "../data/navigationData";
 import Logo from "./Logo";
 
 export default function Header() {
   const [cur, setCur] = useState(null), [last, setLast] = useState(0), [mob, setMob] = useState(false);
-  const [openSub, setOpenSub] = useState(null), [scrolled, setScrolled] = useState(false), [active, setActive] = useState("home");
+  const [openSub, setOpenSub] = useState(null), [scrolled, setScrolled] = useState(false), [active, setActive] = useState("home"), [homeVisible, setHomeVisible] = useState(false);
   const t = useRef();
   const show = (i) => { clearTimeout(t.current); setCur(i); setLast(i); };
   const hide = () => { t.current = setTimeout(() => setCur(null), 180); };
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
+  useLayoutEffect(() => {
+    const home = document.getElementById("home");
+    const scrollPaddingTop = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+    const onScroll = () => {
+      setScrolled(window.scrollY > 30);
+      if (!home) { setHomeVisible(false); return; }
+      const { top, bottom } = home.getBoundingClientRect();
+      setHomeVisible(top < window.innerHeight && bottom > scrollPaddingTop + 1);
+    };
     const onKey = (e) => { if (e.key === "Escape") { setCur(null); setMob(false); } };
-    window.addEventListener("scroll", onScroll, { passive: true }); window.addEventListener("keydown", onKey);
-    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("keydown", onKey); };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true }); window.addEventListener("resize", onScroll); window.addEventListener("keydown", onKey);
+    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); window.removeEventListener("keydown", onKey); };
   }, []);
   useEffect(() => {
     const io = new IntersectionObserver((es) => es.forEach((e) => e.isIntersecting && setActive(e.target.id)), { rootMargin: "-40% 0px -50% 0px" });
@@ -24,7 +32,7 @@ export default function Header() {
 
   const m = nav[last];
   return (
-    <header id="hd" className={scrolled ? "s" : ""} onMouseLeave={hide} onMouseEnter={() => clearTimeout(t.current)}>
+    <header id="hd" className={`${scrolled ? "s " : ""}${homeVisible ? "" : "offscreen"}`} aria-hidden={!homeVisible} onMouseLeave={hide} onMouseEnter={() => clearTimeout(t.current)}>
       <div className="bar">
         <Logo showName />
         <nav className="d" aria-label="Primary">
