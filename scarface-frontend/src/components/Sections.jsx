@@ -79,7 +79,11 @@ export function ProductGallery() {
 }
 
 export function About() {
+<<<<<<< Updated upstream
   return (<section id="about"><div className="wrap two"><Reveal><Head eyebrow="About" title="About ScarfaceEV" lead={brand.about} /><p style={{ marginTop: 16 }}><b>Our vision:</b> to be supplied.<br /><b>Our mission:</b> to be supplied.</p></Reveal><Reveal className="art" delay={0.1}><Img k="about" /></Reveal></div></section>);
+=======
+  return (<section id="about"><div className="wrap two"><Reveal><Head eyebrow="About" title="About ScarfaceEV" /><p className="about-copy">Scarface EV Solutions is a Hyderabad-based EV charging solutions company providing reliable and innovative charging systems for residential, commercial and public infrastructure.</p><p className="about-copy about-copy-secondary">Our solutions include AC chargers, DC fast chargers and home charging systems, helping drive smarter mobility and a sustainable future.</p><h2 className="about-tagline-heading">Scarface EV</h2><p className="about-tagline"><b>Build In Silence. Driven By Power</b></p></Reveal><Reveal className="art" delay={0.1}><Img k="about" /></Reveal></div></section>);
+>>>>>>> Stashed changes
 }
 
 export function BlogSection() {
