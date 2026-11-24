@@ -1,0 +1,9 @@
+{
+  "name": "scarfaceev-project",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix scarface-frontend run dev -- --host 127.0.0.1",
+    "build": "npm --prefix scarface-frontend run build",
+    "preview": "npm --prefix scarface-frontend run preview"
+  }
+}
