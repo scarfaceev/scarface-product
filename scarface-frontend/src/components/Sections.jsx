@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Download, Plus, X } from "lucide-react";
 import { brand } from "../data/brandData";
 import { products } from "../data/productData";
 import { features, why, steps } from "../data/featuresData";
-import { appNote, appScreens, gallery, blog, faq, sustainChain } from "../data/contentData";
+import { appScreens, gallery, blog, faq, sustainChain } from "../data/contentData";
 import Img from "./Img";
 import Icon from "./Icon";
 import Reveal from "./Reveal";
@@ -49,7 +49,7 @@ export function AppShowcase() {
     <div className="tabs" role="tablist">{appScreens.map((s, j) => <button key={s[0]} role="tab" aria-selected={i === j} className={"tab" + (i === j ? " on" : "")} onClick={() => setI(j)}><strong>{s[0]}</strong>{s[1]}</button>)}</div></Reveal>
     <div><div className="phone"><AnimatePresence mode="wait"><motion.div key={i} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div className="lbl">{a[0]}</div><div className="big">{a[2]}</div><div>{a[3]}</div><div className="row"><span>{a[4]}</span><span>›</span></div><div className="row"><span>Illustrative data</span></div></motion.div></AnimatePresence></div>
-      <p className="note">{appNote}</p></div></div></section>);
+      </div></div></section>);
 }
 
 export function WhyChoose() {
@@ -79,7 +79,7 @@ export function ProductGallery() {
 }
 
 export function About() {
-  return (<section id="about"><div className="wrap two"><Reveal><Head eyebrow="About" title="About ScarfaceEV" lead={brand.about} /><p style={{ marginTop: 16 }}><b>Our vision:</b> to be supplied.<br /><b>Our mission:</b> to be supplied.</p></Reveal><Reveal className="art" delay={0.1}><Img k="about" /></Reveal></div></section>);
+  return (<section id="about"><div className="wrap two"><Reveal><Head eyebrow="About" title="About ScarfaceEV" /><p className="about-copy">Scarface EV Solutions is a Hyderabad-based EV charging solutions company providing reliable and innovative charging systems for residential, commercial and public infrastructure.</p><p className="about-copy about-copy-secondary">Our solutions include AC chargers, DC fast chargers and home charging systems, helping drive smarter mobility and a sustainable future.</p><h2 className="about-tagline-heading">Scarface EV</h2><p className="about-tagline"><b>Build In Silence. Driven By Power</b></p></Reveal><Reveal className="art" delay={0.1}><Img k="about" /></Reveal></div></section>);
 }
 
 export function BlogSection() {

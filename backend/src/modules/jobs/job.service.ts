@@ -2,6 +2,7 @@ import type { JobStatus, PrismaClient } from "@prisma/client";
 import { env } from "../../config/env.js";
 import { AppError } from "../../utils/app-error.js";
 import { NotificationService } from "../notifications/notification.service.js";
+import type { IncomingFile } from "../media/media.service.js";
 import type { JobWriteInput } from "./job.schemas.js";
 
 export class JobService {
@@ -56,7 +57,7 @@ export class JobApplicationService {
     private readonly notifications: NotificationService,
   ) {}
 
-  async create(input: import("./job.schemas.js").JobApplicationInput, file: import("../media/storage-adapter.js").IncomingFile) {
+  async create(input: import("./job.schemas.js").JobApplicationInput, file: IncomingFile) {
     const job = await this.prisma.job.findFirst({
       where: { id: input.jobId, status: "PUBLISHED" },
       select: { id: true },
