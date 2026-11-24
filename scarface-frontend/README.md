@@ -13,6 +13,8 @@ npm run preview
 
 Requires Node 18+. The production build is written to `dist/` within this folder. Vite uses relative asset paths so the build can be hosted from a subdirectory.
 
+The backend runs separately from [../backend/](../backend/). Start it with PostgreSQL available, then set `VITE_ENQUIRY_ENDPOINT=/api/v1/enquiries` in `.env`; Vite proxies `/api` to `http://localhost:3001` during development. Production hosting must proxy `/api` to the backend or configure the endpoint to the deployed API origin.
+
 ## Where to change things
 
 | What | File |
@@ -30,7 +32,7 @@ Requires Node 18+. The production build is written to `dist/` within this folder
 
 ## Enquiry form
 
-The form validates locally by default and does not send anything. To connect an API/CRM endpoint, copy `.env.example` to `.env` and set `VITE_ENQUIRY_ENDPOINT` to the URL that accepts the JSON POST. Do not put secrets in `VITE_` variables because they are exposed in frontend builds.
+The form validates locally if `VITE_ENQUIRY_ENDPOINT` is empty. Copy `.env.example` to `.env` to use the local API route. The endpoint accepts a JSON POST; backend credentials must never be placed in `VITE_` variables because they are exposed in frontend builds.
 
 ## 3D product viewer
 
