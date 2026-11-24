@@ -2,7 +2,7 @@
 
 ScarfaceEV is a responsive, single-page website for showcasing the company's EV charging products and providing contact/enquiry paths. The frontend is a React application built with Vite and is maintained in [`scarface-frontend/`](./scarface-frontend/).
 
-This repository contains the frontend only. There is no backend service, database, or API implementation here. The enquiry form can POST to an external API when configured; without an endpoint, it validates locally and clearly reports that it did not send the enquiry.
+The React frontend is under [`scarface-frontend/`](./scarface-frontend/). A separate API service is under [`backend/`](./backend/), built with Node.js, Express, TypeScript, PostgreSQL, and Prisma. The current backend provides public endpoints for enquiries, products, installation requests, jobs/applications, CMS pages, and public media. Login/registration and public admin APIs are intentionally not implemented.
 
 ## Contents
 
@@ -11,6 +11,7 @@ This repository contains the frontend only. There is no backend service, databas
 - [Project structure](#project-structure)
 - [Technology stack](#technology-stack)
 - [Setup and commands](#setup-and-commands)
+- [Backend API](#backend-api)
 - [Configuration and integrations](#configuration-and-integrations)
 - [Where to make changes](#where-to-make-changes)
 - [Assets and media](#assets-and-media)
@@ -153,6 +154,12 @@ Available scripts (run from `scarface-frontend/`):
 | `npm run dev` | Start the Vite development server. |
 | `npm run build` | Create the optimized production build in `scarface-frontend/dist/`. |
 | `npm run preview` | Serve the built output locally for a production-style check. Run `npm run build` first. |
+
+## Backend API
+
+The backend has its own dependencies, environment, migrations, and README. See [`backend/README.md`](./backend/README.md) for setup, routes, data models, storage/email configuration, and deployment notes.
+
+The frontend's [`.env.example`](./scarface-frontend/.env.example) sets `VITE_ENQUIRY_ENDPOINT=/api/v1/enquiries`. In development, [vite.config.js](./scarface-frontend/vite.config.js) proxies `/api` to `http://localhost:3001`. Start PostgreSQL and the backend before testing form submissions. In production, route `/api` to the backend or configure the frontend endpoint to the API's public URL.
 
 ## Configuration and integrations
 
