@@ -2,7 +2,7 @@
 
 ScarfaceEV is a responsive, single-page website for showcasing the company's EV charging products and providing contact/enquiry paths. The frontend is a React application built with Vite and is maintained in [`scarface-frontend/`](./scarface-frontend/).
 
-This repository contains the frontend only. There is no backend service, database, or API implementation here. The enquiry form can POST to an external API when configured; without an endpoint, it validates locally and clearly reports that it did not send the enquiry.
+The React frontend is under [`scarface-frontend/`](./scarface-frontend/). A separate API service is under [`backend/`](./backend/), built with Node.js, Express, TypeScript, PostgreSQL, and Prisma. The current backend provides public endpoints for enquiries, products, installation requests, jobs/applications, CMS pages, and public media. Login/registration and public admin APIs are intentionally not implemented.
 
 ## Contents
 
@@ -11,6 +11,7 @@ This repository contains the frontend only. There is no backend service, databas
 - [Project structure](#project-structure)
 - [Technology stack](#technology-stack)
 - [Setup and commands](#setup-and-commands)
+- [Backend API](#backend-api)
 - [Configuration and integrations](#configuration-and-integrations)
 - [Where to make changes](#where-to-make-changes)
 - [Assets and media](#assets-and-media)
@@ -67,6 +68,19 @@ scarfaceev-website/
 ├── .gitignore
 ├── README.md
 ├── SCARFACEEV Tall Charger Front (1).zip  # retained original image archive
+├── backend/
+│   ├── .env.example
+│   ├── README.md
+│   ├── package.json
+│   ├── prisma/
+│   │   ├── schema.prisma
+│   │   └── migrations/
+│   ├── src/
+│   │   ├── app.ts
+│   │   ├── server.ts
+│   │   ├── modules/
+│   │   └── routes/
+│   └── tests/
 └── scarface-frontend/
     ├── .env.example
     ├── ATTRIBUTION.md
@@ -118,7 +132,7 @@ scarfaceev-website/
             └── globals.css
 ```
 
-The `icons/`, `models/`, and `videos/` asset folders are present for future assets; they currently contain placeholders. There are no separate `backend/`, database, hooks, layouts, or services directories because the current app has no backend and does not need those frontend abstractions. Local dependency installations and generated build output are ignored and are not part of the source tree.
+The backend is a separate API service with its own `README.md`, `package.json`, Prisma schema and migrations, source, and tests; its setup and structure are documented in [`backend/README.md`](./backend/README.md). The frontend does not currently have separate hooks, layouts, or services directories. Local dependency installations and generated build output are ignored and are not part of the source tree.
 
 ## Technology stack
 
@@ -154,6 +168,28 @@ Available scripts (run from `scarface-frontend/`):
 | `npm run build` | Create the optimized production build in `scarface-frontend/dist/`. |
 | `npm run preview` | Serve the built output locally for a production-style check. Run `npm run build` first. |
 
+## Backend API
+
+The backend is a Node.js 20+ / Express 5 API written in TypeScript. It uses PostgreSQL with Prisma for persistence and has its own dependencies, environment, migrations, and detailed documentation in [`backend/README.md`](./backend/README.md).
+
+From the repository root, install and start the backend with PostgreSQL available:
+
+```powershell
+Set-Location .\backend
+npm install
+Copy-Item .env.example .env
+npm run prisma:generate
+npm run db:deploy
+npm run db:seed
+npm run dev
+```
+
+Configure `DATABASE_URL` in `backend/.env` for your PostgreSQL database before running migrations. Prisma schema changes and the available database scripts are documented in [`backend/README.md`](./backend/README.md). Backend environment options, including optional email and storage provider settings, are listed in [`backend/.env.example`](./backend/.env.example); do not commit `.env` or put backend secrets in frontend variables.
+
+The public API is mounted at `/api/v1`: it supports health checks, enquiries, published products, installation requests, published jobs and applications, published CMS pages, and public media retrieval. Admin APIs and authentication are not implemented. In development, Swagger UI and the OpenAPI document are available at `/api/docs` and `/api/openapi.json`. The full endpoint list and behavior are in [`backend/README.md`](./backend/README.md).
+
+The frontend's [`.env.example`](./scarface-frontend/.env.example) sets `VITE_ENQUIRY_ENDPOINT=/api/v1/enquiries`. In development, [vite.config.js](./scarface-frontend/vite.config.js) proxies `/api` to `http://localhost:3001`. Start PostgreSQL and the backend before testing form submissions. In production, route `/api` to the backend or configure the frontend endpoint to the API's public URL.
+
 ## Configuration and integrations
 
 ### Enquiry endpoint
@@ -164,7 +200,7 @@ The form reads `VITE_ENQUIRY_ENDPOINT`. To enable sending:
 2. Set `VITE_ENQUIRY_ENDPOINT` to the URL of an API that accepts a JSON `POST` request.
 3. Restart the Vite development server after changing the environment file.
 
-Without this value, the form validates the fields and tells the visitor that no enquiry was sent. No API/server implementation is included in this repository.
+Without this value, the form validates the fields and tells the visitor that no enquiry was sent. To send submissions to the backend included in this repository, use the endpoint shown in the frontend `.env.example` and start the backend.
 
 Vite embeds variables prefixed with `VITE_` into client-side code. Do not put credentials, private API keys, or other secrets in these variables. Configure any privileged credentials on the server that receives the request.
 
@@ -200,7 +236,7 @@ Do not add externally sourced images, video, fonts, or models without checking t
 
 Run `npm run build` from `scarface-frontend/`; Vite writes deployable files to `scarface-frontend/dist/`. The Vite configuration uses `base: "./"` so generated asset URLs are relative and can work when hosted under a subdirectory. Deploy the contents of that `dist/` directory to a static host.
 
-The current app is a client-rendered single page. If the site later gains server endpoints, server-side rendering, or route-based pages, document and deploy those services separately; none are configured here today.
+The frontend is a client-rendered single page deployed as static files. Deploy the backend separately and route `/api` to it, or configure `VITE_ENQUIRY_ENDPOINT` with the deployed API URL. See [`backend/README.md`](./backend/README.md) for backend deployment and configuration details.
 
 ## Content and release checklist
 
