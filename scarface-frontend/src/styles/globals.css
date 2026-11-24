@@ -56,7 +56,6 @@ nav.d button:hover,nav.d button.on{background:rgba(25,181,165,.18);color:var(--l
 .tab strong{display:block;font:700 17px Manrope;color:var(--navy)}.tab.on{border-color:var(--teal);box-shadow:0 0 0 3px rgba(25,181,165,.18)}
 .phone{width:min(290px,80%);aspect-ratio:9/18.5;margin:auto;border-radius:42px;background:var(--navy);border:8px solid #2a3944;padding:22px 18px;color:#fff;display:flex;flex-direction:column;gap:12px;box-shadow:0 30px 60px rgba(16,24,32,.3)}
 .phone .big{font:800 38px Manrope;color:var(--lteal)}.phone .row{background:var(--dark);border-radius:14px;padding:12px;font-size:13px;display:flex;justify-content:space-between}
-.note{font-size:12px;color:#8a97a1;text-align:center;margin-top:14px}
 /* steps */
 .steps{counter-reset:s}.steps .card::before{counter-increment:s;content:"0" counter(s);font:800 34px Manrope;color:var(--teal);display:block;margin-bottom:10px}
 /* faq */
@@ -348,6 +347,13 @@ footer{
 footer h4{color:var(--primary-text)}
 footer a:hover{color:var(--light-teal)}
 .legal{border-top-color:rgba(114,216,197,.12)}
+footer .social-links{display:flex;align-items:center;flex-wrap:nowrap;gap:14px;margin-top:18px}
+footer .social-link{display:inline-flex;align-items:center;gap:5px;padding:0;border:0;color:#d9e5e9;font-size:12px;font-weight:600;white-space:nowrap;transition:color .2s ease,text-shadow .2s ease}
+footer .social-link img{display:block;width:20px;height:20px;object-fit:contain;transition:filter .2s ease}
+footer .social-link:hover,footer .social-link:focus-visible{color:var(--teal);text-shadow:0 0 12px rgba(25,181,165,.35)}
+footer .social-link:hover img,footer .social-link:focus-visible img{filter:drop-shadow(0 0 4px rgba(25,181,165,.55))}
+footer .social-link:focus-visible{outline:none;text-decoration:underline;text-underline-offset:4px}
+footer .footer-description{max-width:300px;text-align:justify;text-justify:inter-word;text-align-last:left}
 
 #fab #top{background:rgba(16,31,43,.92);border:1px solid var(--glass-border);backdrop-filter:blur(16px)}
 #modal .box{background:var(--secondary-bg);color:var(--primary-text);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
