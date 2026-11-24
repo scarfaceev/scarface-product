@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const normalizedEnum = <T extends readonly [string, ...string[]]>(values: T) =>
+const normalizedEnum = <const T extends readonly [string, ...string[]]>(values: T) =>
   z.preprocess((value) => typeof value === "string" ? value.toUpperCase() : value, z.enum(values));
 
 export const installationRequestSchema = z.object({
