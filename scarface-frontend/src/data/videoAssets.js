@@ -3,4 +3,4 @@
 // import heroMobile from "../assets/videos/hero-mobile.mp4";   // optional smaller portrait-friendly cut (<3 MB)
 // import heroWebm from "../assets/videos/hero.webm";
 // import heroPoster from "../assets/images/hero-poster.webp";
-export const heroVideo = { src: null /* heroMp4 */, webm: null /* heroWebm */, mobileSrc: null /* heroMobile */, poster: null /* heroPoster */, caption: "Illustrative render – replace with licensed ScarfaceEV footage" };
+export const heroVideo = { src: null /* heroMp4 */, webm: null /* heroWebm */, mobileSrc: null /* heroMobile */, poster: null /* heroPoster */};
