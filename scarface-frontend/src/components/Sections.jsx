@@ -19,19 +19,6 @@ export function ProductShowcase() {
         <ul className="pts">{p.points.map((x) => <li key={x}>{x}</li>)}</ul><a className="btn" href={p.cta[1]}>{p.cta[0]}</a></div></Reveal>))}</div></section>);
 }
 
-export function Specifications() {
-  const p = products[0];
-  return (<section className="dark" id="specs"><div className="wrap two"><Reveal><Head eyebrow="Specifications" title="Technical details" lead="Placeholder values – replace with verified ScarfaceEV specifications in productData.js." /></Reveal>
-    <Reveal delay={0.1}>{Object.entries(p.specs).map(([k, v]) => <div className="spec" key={k}><b>{k}</b><i>{v}</i></div>)}</Reveal></div></section>);
-}
-
-export function ProductComparison() {
-  if (products.length < 2) return null;
-  const keys = Object.keys(products[0].specs);
-  return (<section id="compare"><div className="wrap"><Head eyebrow="Compare" title="Compare chargers" /><div className="tbl"><table><thead><tr><th />{products.map((p) => <th key={p.id}>{p.name}</th>)}</tr></thead>
-    <tbody>{keys.map((k) => <tr key={k}><th>{k}</th>{products.map((p) => <td key={p.id}>{p.specs[k] ?? "—"}</td>)}</tr>)}</tbody></table></div></div></section>);
-}
-
 export function Datasheet() {
   const p = products.find((x) => x.datasheet);
   if (!p) return null; // hidden until a real PDF path is supplied
@@ -89,7 +76,7 @@ export function BlogSection() {
 
 export function FAQ() {
   const [o, setO] = useState(0);
-  return (<section id="faq"><div className="wrap"><Reveal><Head center eyebrow="FAQ" title="Common questions" /></Reveal>
+  return (<section id="faq"><div className="wrap"><Reveal><Head center title="FAQ" /></Reveal>
     <div className="faq">{faq.map(([q, a], i) => (<div className="fi" key={q}><button aria-expanded={o === i} onClick={() => setO(o === i ? null : i)}>{q}<Plus size={20} className={o === i ? "rot" : ""} /></button>
       <AnimatePresence initial={false}>{o === i && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden" }}><p>{a}</p></motion.div>}</AnimatePresence></div>))}</div></div></section>);
 }

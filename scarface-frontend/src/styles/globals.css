@@ -229,6 +229,7 @@ nav.d button:hover,nav.d button.on,nav.d button.cur{
 .hc h1{max-width:820px;text-shadow:0 16px 50px rgba(0,0,0,.28)}
 .hc h1 span{color:var(--bright-cyan);font-size:.72em}
 .hc p{color:#D3DEE6}
+.hc .hero-copy--no-ctas p{margin-bottom:0}
 .hfoot{color:#9DB2BF}
 
 .card,.fi,.faq details,.tab,.phone,.tbl table{

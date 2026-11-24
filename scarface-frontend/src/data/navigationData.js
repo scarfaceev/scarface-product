@@ -1,7 +1,7 @@
 // img = key in imageAssets.js; spy = section ids that highlight this item while scrolling.
 export const nav = [
   { label: "Home", img: "home", spy: ["home"], title: "Welcome to ScarfaceEV", desc: "Smarter charging for every journey.", cta: ["Explore chargers", "#chargers"], links: [["Home overview", "#home"]] },
-  { label: "Chargers", img: "chargers", spy: ["chargers", "viewer", "specs", "features", "app"], title: "Our chargers", desc: "Explore the range and technical details.", cta: ["View specifications", "#specs"], links: [["Our chargers", "#chargers"], ["Every angle", "#viewer"], ["Specifications", "#specs"], ["Features", "#features"], ["Mobile app", "#app"]] },
+  { label: "Chargers", img: "chargers", spy: ["chargers", "viewer", "features", "app"], title: "Our chargers", desc: "Explore our EV charging solutions.", cta: ["Explore chargers", "#chargers"], links: [ ["Every angle", "#viewer"], ["Features", "#features"], ["Mobile app", "#app"]] },
   { label: "Sustainable", img: "sustainability", spy: ["sustainability", "why"], title: "Sustainable mobility", desc: "Cleaner charging and transport.", cta: ["Why ScarfaceEV", "#why"], links: [["Sustainable mobility", "#sustainability"], ["Why choose us", "#why"]] },
   { label: "Services", img: "services", spy: ["services", "installation"], title: "Installation & support", desc: "From first conversation to handover.", cta: ["See the process", "#installation"], links: [["Installation journey", "#installation"], ["Consultation", "#contact"]] },
   { label: "Gallery", img: "gallery", spy: ["gallery"], title: "Product gallery", desc: "View charger photographs.", cta: ["Open gallery", "#gallery"], links: [["Product gallery", "#gallery"]] },
