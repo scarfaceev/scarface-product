@@ -13,7 +13,7 @@ export const brand = {
     { label: "LinkedIn", href: "#", icon: linkedinIcon },
     { label: "YouTube", href: "#", icon: youtubeIcon },
   ],
-  hero: { title: ["Build In Silence", "Driven By Power"], text: "ScarfaceEV designs intelligent EV charging solutions for homes and businesses – built to make every journey simpler, smarter and more convenient.", ctas: [{ label: "Explore Our Chargers", href: "#chargers" }, { label: "Talk to Our Team", href: "#contact" }] },
+  hero: { title: ["Build In Silence", "Driven By Power"], text: "ScarfaceEV designs intelligent EV charging solutions for homes and businesses – built to make every journey simpler, smarter and more convenient." },
   cta: { title: "Ready to Charge Smarter?", text: "Explore intelligent charging solutions with ScarfaceEV and take the next step toward a smarter electric future." },
   interests: ["Home charger", "Commercial charger", "Consultation", "Maintenance & support", "Other"],
 };

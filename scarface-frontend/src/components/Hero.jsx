@@ -8,6 +8,7 @@ import Img from "./Img";
 
 export default function Hero() {
   const reduce = useReducedMotion(), vref = useRef(), sec = useRef(), h = brand.hero;
+  const heroCtas = h.ctas ?? [];
   const small = typeof window !== "undefined" && window.matchMedia("(max-width:760px)").matches;
   const saveData = typeof navigator !== "undefined" && navigator.connection?.saveData;
   const src = small ? heroVideo.mobileSrc : heroVideo.src;
@@ -32,13 +33,13 @@ export default function Hero() {
         <div className="shade" />
       </motion.div>
       <motion.div className="wrap hc" style={{ y: ty }}>
-        <motion.div initial={reduce ? false : { opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}>
+        <motion.div className={heroCtas.length ? "hero-copy" : "hero-copy hero-copy--no-ctas"} initial={reduce ? false : { opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}>
           <h1>{h.title[0]}<br /><span>{h.title[1]}</span></h1>
           <p>{h.text}</p>
-          <div className="ctas">{h.ctas.map((c, i) => <a key={c.label} className={"btn" + (i ? " ghost" : "")} href={c.href}>{c.label}</a>)}</div>
+          {heroCtas.length > 0 && <div className="ctas">{heroCtas.map((c, i) => <a key={c.label} className={"btn" + (i ? " ghost" : "")} href={c.href}>{c.label}</a>)}</div>}
         </motion.div>
       </motion.div>
-      <div className="hfoot wrap"><span>{heroVideo.caption}</span>
+      <div className="hfoot wrap">{heroVideo.caption && <span>{heroVideo.caption}</span>}
         {useVideo && <button className="pp" aria-label={playing ? "Pause video" : "Play video"} onClick={() => setPlaying(!playing)}>{playing ? <Pause size={16} /> : <Play size={16} />}</button>}
       </div>
     </section>
