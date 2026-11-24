@@ -10,11 +10,11 @@ export const features = [
   { icon: "gauge", title: "Charging Monitoring System (CMS)", text: "Monitor charging sessions, status, and energy consumption." }
 ];
 export const why = [
-  ["Intelligent charging technology", "Edit to describe your technology."],
-  ["Installation Assistance", "Edit to describe your installation assistance."],
-  ["Site Inspection and Construction", "Edit to describe your site inspection and construction services."],
-  ["Documents's Assistance", "Edit to describe your documents assistance."],
-  ["White Labelling", "Edit to describe your white labelling services."],
-  ["Reliable Support", "Edit with confirmed support details."]
+  ["Intelligent Charging Technology", "AC home chargers and DC fast chargers up to 360 kW."],
+  ["Installation Assistance", "Location assessment, site inspection, and government permission support."],
+  ["Site Inspection and Construction", "Site inspections for residential, commercial, fleet, and highway charging locations."],
+  ["Document Assistance", "Assistance with project documentation and government permissions."],
+  ["White Labelling", "Your company logo on the charger"],
+  ["Reliable Support", "Reliable, efficient charging solutions tailored to your site and charging needs."]
 ];
 export const steps = [["Contact ScarfaceEV", "Tell us about your vehicle and property."], ["Discuss requirements", "We learn what you need from your charger."], ["Site assessment", "We plan the installation with you."], ["Overall documentation", "We prepare and share the paperwork for your installation."], ["Installation & handover", "Your charger is installed and explained."]];
