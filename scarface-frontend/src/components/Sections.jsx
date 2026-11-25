@@ -66,7 +66,7 @@ export function ProductGallery() {
 }
 
 export function About() {
-  return (<section id="about"><div className="wrap two"><Reveal><Head eyebrow="About" title="About ScarfaceEV" /><p className="about-copy">Scarface EV Solutions is a Hyderabad-based EV charging solutions company providing reliable and innovative charging systems for residential, commercial and public infrastructure.</p><p className="about-copy about-copy-secondary">Our solutions include AC chargers, DC fast chargers and home charging systems, helping drive smarter mobility and a sustainable future.</p><h2 className="about-tagline-heading">Scarface EV</h2><p className="about-tagline"><b>Build In Silence. Driven By Power</b></p></Reveal><Reveal className="art" delay={0.1}><Img k="about" /></Reveal></div></section>);
+  return (<section id="about"><div className="wrap two"><Reveal><Head eyebrow="About" title="About ScarfaceEV" /><p className="about-copy">Scarface EV Solutions is a Hyderabad-based EV charging solutions company providing reliable and innovative charging systems for residential, commercial and public infrastructure.</p><p className="about-copy about-copy-secondary">Our solutions include AC chargers, DC fast chargers and home charging systems, helping drive smarter mobility and a sustainable future.</p><h2 className="about-tagline-heading">Scarface EV</h2><p className="about-tagline"><b>Build In Silence. Driven By Power</b></p></Reveal><Reveal className="art about-image-frame" delay={0.1}><Img k="about" /></Reveal></div></section>);
 }
 
 export function BlogSection() {
@@ -74,10 +74,29 @@ export function BlogSection() {
     <div className="grid">{blog.map(([k, cat, t, d], i) => <Reveal key={t} delay={i * 0.06}><article className="card bl"><div className="art"><Img k={k} /></div><small>{cat}</small><h3>{t}</h3><p>{d}</p></article></Reveal>)}</div></div></section>);
 }
 
+const faqAnchorId = (question) => `faq-${question.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+
 export function FAQ() {
-  const [o, setO] = useState(0);
+  const getLinkedQuestionIndex = (hash) => faq.findIndex(([question]) => `#${faqAnchorId(question)}` === hash);
+  const [o, setO] = useState(() => {
+    const linkedIndex = getLinkedQuestionIndex(window.location.hash);
+    return linkedIndex === -1 ? 0 : linkedIndex;
+  });
+  useEffect(() => {
+    const openQuestion = (hash) => {
+      const linkedIndex = getLinkedQuestionIndex(hash);
+      if (linkedIndex !== -1) setO(linkedIndex);
+    };
+    const handleHashChange = () => openQuestion(window.location.hash);
+    window.addEventListener("hashchange", handleHashChange);
+    window.addEventListener("popstate", handleHashChange);
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+      window.removeEventListener("popstate", handleHashChange);
+    };
+  }, []);
   return (<section id="faq"><div className="wrap"><Reveal><Head center title="FAQ" /></Reveal>
-    <div className="faq">{faq.map(([q, a], i) => (<div className="fi" key={q}><button aria-expanded={o === i} onClick={() => setO(o === i ? null : i)}>{q}<Plus size={20} className={o === i ? "rot" : ""} /></button>
+    <div className="faq">{faq.map(([q, a], i) => (<div className="fi" id={faqAnchorId(q)} key={q}><button aria-expanded={o === i} onClick={() => setO(o === i ? null : i)}>{q}<Plus size={20} className={o === i ? "rot" : ""} /></button>
       <AnimatePresence initial={false}>{o === i && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden" }}><p>{a}</p></motion.div>}</AnimatePresence></div>))}</div></div></section>);
 }
 
