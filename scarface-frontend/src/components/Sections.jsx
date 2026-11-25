@@ -88,15 +88,11 @@ export function FAQ() {
       if (linkedIndex !== -1) setO(linkedIndex);
     };
     const handleHashChange = () => openQuestion(window.location.hash);
-    const handleAnchorClick = (event) => {
-      const link = event.target instanceof Element ? event.target.closest('a[href^="#faq-"]') : null;
-      if (link) openQuestion(link.hash);
-    };
     window.addEventListener("hashchange", handleHashChange);
-    document.addEventListener("click", handleAnchorClick);
+    window.addEventListener("popstate", handleHashChange);
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
-      document.removeEventListener("click", handleAnchorClick);
+      window.removeEventListener("popstate", handleHashChange);
     };
   }, []);
   return (<section id="faq"><div className="wrap"><Reveal><Head center title="FAQ" /></Reveal>
