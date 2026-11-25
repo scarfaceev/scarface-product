@@ -77,18 +77,23 @@ export function BlogSection() {
 const faqAnchorId = (question) => `faq-${question.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
 
 export function FAQ() {
-  const getLinkedQuestionIndex = () => faq.findIndex(([question]) => `#${faqAnchorId(question)}` === window.location.hash);
+  const getLinkedQuestionIndex = (hash) => faq.findIndex(([question]) => `#${faqAnchorId(question)}` === hash);
   const [o, setO] = useState(() => {
-    const linkedIndex = getLinkedQuestionIndex();
+    const linkedIndex = getLinkedQuestionIndex(window.location.hash);
     return linkedIndex === -1 ? 0 : linkedIndex;
   });
   useEffect(() => {
-    const openLinkedQuestion = () => {
-      const linkedIndex = getLinkedQuestionIndex();
+    const openQuestion = (hash) => {
+      const linkedIndex = getLinkedQuestionIndex(hash);
       if (linkedIndex !== -1) setO(linkedIndex);
     };
-    window.addEventListener("hashchange", openLinkedQuestion);
-    return () => window.removeEventListener("hashchange", openLinkedQuestion);
+    const handleHashChange = () => openQuestion(window.location.hash);
+    window.addEventListener("hashchange", handleHashChange);
+    window.addEventListener("popstate", handleHashChange);
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+      window.removeEventListener("popstate", handleHashChange);
+    };
   }, []);
   return (<section id="faq"><div className="wrap"><Reveal><Head center title="FAQ" /></Reveal>
     <div className="faq">{faq.map(([q, a], i) => (<div className="fi" id={faqAnchorId(q)} key={q}><button aria-expanded={o === i} onClick={() => setO(o === i ? null : i)}>{q}<Plus size={20} className={o === i ? "rot" : ""} /></button>
