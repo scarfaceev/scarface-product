@@ -23,7 +23,7 @@ The backend runs separately from [../backend/](../backend/). Start it with Postg
 | Hero text, CTAs, contact details, social links, tagline | `src/data/brandData.js` |
 | Navigation + mega menus | `src/data/navigationData.js` |
 | Site images and gallery configuration | `src/data/imageAssets.js` |
-| Original charger photos | `src/assets/images/charger-photos/SCARFACEEV Tall Charger Front (1)/`; mappings are in `src/data/imageAssets.js` |
+| Charger photos | `src/assets/images/charger-photos/SCARFACEEV Tall Charger Front (1)/`; product, gallery, and viewer mappings are in `src/data/imageAssets.js` |
 | Hero video | Place media in `src/assets/videos/` and configure `src/data/videoAssets.js` |
 | Product information and datasheet | `src/data/productData.js` |
 | Features and installation steps | `src/data/featuresData.js` |
@@ -36,7 +36,7 @@ The form validates locally if `VITE_ENQUIRY_ENDPOINT` is empty. Copy `.env.examp
 
 ## 3D product viewer
 
-`src/components/ChargerCanvas.jsx` renders a conceptual procedural charger (labelled "Conceptual product visual"). To use a real model, put a GLB in `src/assets/models/` and set `model3d` in `src/data/productData.js`. Scale and centre the model in your 3D tool (about 2 units tall). The badge disappears when a model is configured. If WebGL is unavailable or errors, a lightweight CSS-3D version is shown. The existing image-based charger viewer and its automatic rotation are retained.
+`src/components/Product3DViewer.jsx` rotates through the supplied front, angled, and rear DC charger photos; it supports dragging, angle selection, and zoom. This is a photo-based turntable, not a true 3D model. For a real interactive 3D model, put a GLB in `src/assets/models/` and configure `model3d` in `src/data/productData.js`; the separate `src/components/ChargerCanvas.jsx` currently renders a procedural concept when no GLB is supplied.
 
 ## Hero photo and video
 
