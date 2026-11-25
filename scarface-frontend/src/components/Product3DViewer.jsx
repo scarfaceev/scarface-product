@@ -11,7 +11,6 @@ export default function Product3DViewer() {
   const reduce = useReducedMotion();
   const viewerRef = useRef(null);
   const isInView = useInView(viewerRef, { amount: 0.3 });
-  const [modelId, setModelId] = useState(chargerModels[0].id);
   const [viewIndex, setViewIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [interacting, setInteracting] = useState(false);
@@ -21,7 +20,7 @@ export default function Product3DViewer() {
   const [failedView, setFailedView] = useState(null);
   const dragStart = useRef(null);
   const resumeTimer = useRef(null);
-  const model = chargerModels.find(({ id }) => id === modelId);
+  const model = chargerModels[0];
   const view = model.views[viewIndex];
   const autoRotating = isInView && !reduce && !paused && !interacting;
   const viewKey = `${model.id}-${viewIndex}`;
@@ -94,7 +93,6 @@ export default function Product3DViewer() {
     setSelection({
       angle,
       targetIndex,
-      modelId: model.id,
     });
     setInteracting(false);
   };
@@ -144,26 +142,7 @@ export default function Product3DViewer() {
         <Reveal>
           <div className="eyebrow">Explore</div>
           <h2>See it from every angle</h2>
-          <p className="lead">Browse the supplied product photos. This is an image-based viewer, not a 3D model.</p>
-          <div className="viewer-models" role="group" aria-label="Charger model">
-            {chargerModels.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                aria-pressed={model.id === item.id}
-                className={`btn ghost sm${model.id === item.id ? " selected" : ""}`}
-                onClick={() => {
-                  setSelection(null);
-                  setSelectedAngle(null);
-                  setModelId(item.id);
-                  setViewIndex(0);
-                  registerInteraction();
-                }}
-              >
-                {item.name}
-              </button>
-            ))}
-          </div>
+          <p className="lead">Drag or use the controls to explore the supplied front, angled and rear product views.</p>
           <div className="vctl">
             <div className="viewer-controls">
               <button
@@ -203,7 +182,7 @@ export default function Product3DViewer() {
               </button>
             </div>
             <div className="angle-controls" role="group" aria-label="Choose product viewing angle">
-              {["Front", "Side", "Back"].map((angle) => {
+              {["Front", "Three-quarter", "Side", "Back"].map((angle) => {
                 const available = model.views.some((item) => item.angle === angle);
                 return (
                   <button
@@ -236,7 +215,7 @@ export default function Product3DViewer() {
             <p className="viewer-note">
               {reduce
                 ? "Automatic rotation is disabled by your reduced-motion setting."
-                : "Each supplied view is shown for 2 seconds. Drag or use the controls to browse."}
+                : "The charger rotates through the supplied photos. Drag or use the controls to browse each view."}
             </p>
           </div>
         </Reveal>
@@ -246,7 +225,7 @@ export default function Product3DViewer() {
           data-model={model.id}
           data-view-index={viewIndex}
           role="group"
-          aria-label={`${model.name} photos. Drag left or right to change view.`}
+          aria-label={`${model.name} photos. Drag left or right to rotate through the supplied views.`}
           tabIndex={0}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
