@@ -1,5 +1,6 @@
 import { useState } from "react";
 import logo from "../assets/logo/logo-removebg-preview.png";
+import Overlays from "../components/Overlays";
 import googleIcon from "../assets/auth-providers/google.png";
 import microsoftIcon from "../assets/auth-providers/microsoft.png";
 import appleIcon from "../assets/auth-providers/apple.png";
@@ -221,7 +222,7 @@ export default function Register({
                 required
               />
               <span>
-                I agree to the{" "}
+                I have read and agree to the{" "}
                 <a className="sev-account-link" href="#terms" onClick={(event) => openPolicy(event, "terms")}>
                   Terms and Conditions
                 </a>{" "}
@@ -253,6 +254,7 @@ export default function Register({
         </p>
         <a className="sev-account-home" href={homeHref}>Return to homepage</a>
       </section>
+      <Overlays policyOnly />
     </main>
   );
 }
