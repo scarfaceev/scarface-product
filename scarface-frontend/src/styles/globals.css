@@ -51,11 +51,6 @@ nav.d button:hover,nav.d button.on{background:rgba(25,181,165,.18);color:var(--l
 #about .about-tagline-heading{margin:24px 0 6px;color:var(--bright-cyan);text-align:left}
 #about .about-tagline{margin:0;text-align:left;line-height:1.5}
 @media(max-width:860px){.two{grid-template-columns:1fr;gap:32px}section{padding:68px 0}}
-/* app */
-.tabs{display:flex;flex-direction:column;gap:10px;margin-top:28px}.tab{text-align:left;background:#fff;border:1px solid #e3e9e7;border-radius:16px;padding:16px 20px;cursor:pointer;font:inherit;transition:.25s}
-.tab strong{display:block;font:700 17px Manrope;color:var(--navy)}.tab.on{border-color:var(--teal);box-shadow:0 0 0 3px rgba(25,181,165,.18)}
-.phone{width:min(290px,80%);aspect-ratio:9/18.5;margin:auto;border-radius:42px;background:var(--navy);border:8px solid #2a3944;padding:22px 18px;color:#fff;display:flex;flex-direction:column;gap:12px;box-shadow:0 30px 60px rgba(16,24,32,.3)}
-.phone .big{font:800 38px Manrope;color:var(--lteal)}.phone .row{background:var(--dark);border-radius:14px;padding:12px;font-size:13px;display:flex;justify-content:space-between}
 /* steps */
 .steps{counter-reset:s}.steps .card::before{counter-increment:s;content:"0" counter(s);font:800 34px Manrope;color:var(--teal);display:block;margin-bottom:10px}
 /* faq */
@@ -122,8 +117,6 @@ nav.d button.cur{color:var(--lteal);box-shadow:inset 0 -2px 0 var(--teal);border
 .scr{margin:22px auto 0;width:130px;height:104px;border-radius:18px;background:var(--navy);color:var(--teal);display:grid;place-items:center}.face.front i{display:block;margin:34px auto 0;width:12px;height:12px;border-radius:50%;background:var(--lteal);box-shadow:0 0 18px var(--teal)}
 .floor{position:absolute;bottom:40px;width:240px;height:30px;border-radius:50%;background:rgba(0,0,0,.45);filter:blur(12px)}
 .vctl{margin-top:26px;display:grid;gap:16px}.vctl label{color:#fff;display:flex;gap:14px;align-items:center;font:600 14px Manrope}.vctl input{width:180px;padding:0;accent-color:var(--teal)}
-.tab{font-family:Inter}.dark .tab{background:var(--dark);border-color:rgba(255,255,255,.08);color:#aab6bf}.dark .tab strong{color:#fff}
-.phone .lbl{font:700 14px Manrope;color:#9eacb6}
 .flow{display:flex;gap:0;margin-top:48px;justify-content:space-between}.fn{flex:1;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
 .node{width:72px;height:72px;border-radius:22px;background:var(--navy);color:var(--teal);display:grid;place-items:center;z-index:1}.fn small{font-size:13px;max-width:130px}
 .ln{position:absolute;top:36px;left:calc(50% + 40px);width:calc(100% - 80px);height:3px;background:repeating-linear-gradient(90deg,var(--teal) 0 10px,transparent 10px 20px);background-size:20px 3px;animation:fl 1s linear infinite}@keyframes fl{to{background-position:20px 0}}
@@ -248,7 +241,7 @@ nav.d button:hover,nav.d button.on,nav.d button.cur{
 .hc .hero-copy--no-ctas p{margin-bottom:0}
 .hfoot{color:#9DB2BF}
 
-.card,.fi,.faq details,.tab,.phone,.tbl table{
+.card,.fi,.faq details,.tbl table{
   background:var(--card-bg);
   border:1px solid var(--glass-border);
   border-radius:20px;
@@ -282,11 +275,8 @@ nav.d button:hover,nav.d button.on,nav.d button.cur{
 .dark{background:linear-gradient(145deg,var(--primary-bg),var(--secondary-bg));color:var(--secondary-text)}
 .dark h2,.dark h3{color:var(--primary-text)}
 .dark .card{background:var(--card-bg);border-color:var(--glass-border)}
-.dark .tab{background:rgba(16,31,43,.72);border-color:rgba(75,220,210,.16);color:var(--secondary-text)}
-.dark .tab strong{color:var(--primary-text)}
-.dark .tab.on{border-color:var(--primary-teal);box-shadow:0 0 0 3px rgba(25,181,165,.12)}
 
-.two .art,.stage3d,.phone,.sbg,.gi,.bl .art,#mega .art{
+.two .art,.stage3d,.sbg,.gi,.bl .art,#mega .art{
   border:1px solid var(--glass-border);
   box-shadow:var(--glass-shadow);
 }
@@ -299,14 +289,6 @@ nav.d button:hover,nav.d button.on,nav.d button.cur{
 .spec{border-bottom-color:rgba(114,216,197,.12)}
 .spec b{color:var(--primary-text)}
 .spec i,.dark .spec span{color:var(--secondary-text)}
-
-.tabs .tab{text-align:left}
-.phone{
-  background:linear-gradient(160deg,rgba(17,39,53,.95),rgba(7,19,29,.98));
-  border:8px solid rgba(70,96,107,.62);
-  box-shadow:0 30px 70px rgba(0,8,14,.5),0 0 30px rgba(25,181,165,.08);
-}
-.phone .row{background:rgba(7,19,29,.72);border:1px solid rgba(114,216,197,.12)}
 
 .fi{background:rgba(17,39,53,.72);border-color:var(--glass-border)}
 .fi button{color:var(--primary-text)}

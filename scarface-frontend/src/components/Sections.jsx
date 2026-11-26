@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Download, Plus, X } from "lucide-react";
 import { brand } from "../data/brandData";
 import { products } from "../data/productData";
 import { features, why, steps } from "../data/featuresData";
-import { appScreens, gallery, blog, faq, sustainChain } from "../data/contentData";
+import { gallery, blog, faq, sustainChain } from "../data/contentData";
 import Img from "./Img";
 import Icon from "./Icon";
 import Reveal from "./Reveal";
@@ -28,15 +28,6 @@ export function Datasheet() {
 export function Features() {
   return (<section id="features"><div className="wrap"><Reveal><Head eyebrow="Features" title="Built around you" lead="Edit each card to describe only capabilities your product actually supports." /></Reveal>
     <div className="grid">{features.map((f, i) => <Reveal key={f.title} delay={i * 0.05}><div className="card"><div className="ic"><Icon name={f.icon} /></div><h3>{f.title}</h3><p>{f.text}</p></div></Reveal>)}</div></div></section>);
-}
-
-export function AppShowcase() {
-  const [i, setI] = useState(0), a = appScreens[i], reduce = useReducedMotion();
-  return (<section className="dark" id="app"><div className="wrap two"><Reveal><Head eyebrow="Mobile app" title="Control from your phone" />
-    <div className="tabs" role="tablist">{appScreens.map((s, j) => <button key={s[0]} role="tab" aria-selected={i === j} className={"tab" + (i === j ? " on" : "")} onClick={() => setI(j)}><strong>{s[0]}</strong>{s[1]}</button>)}</div></Reveal>
-    <div><div className="phone"><AnimatePresence mode="wait"><motion.div key={i} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div className="lbl">{a[0]}</div><div className="big">{a[2]}</div><div>{a[3]}</div><div className="row"><span>{a[4]}</span><span>›</span></div><div className="row"><span>Illustrative data</span></div></motion.div></AnimatePresence></div>
-      </div></div></section>);
 }
 
 export function WhyChoose() {
