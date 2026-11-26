@@ -345,26 +345,32 @@ body:has(.sev-account-page) {
   color: #777;
   cursor: not-allowed;
   opacity: .72;
+  transition: background-color .2s ease, border-color .2s ease, opacity .2s ease, transform .2s ease;
 }
 
-.sev-social-buttons button span:first-child {
-  display: grid;
+.sev-social-buttons button:hover {
+  border-color: #555;
+  background: #151515;
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.sev-social-buttons .sev-social-icon {
+  display: block;
   width: 32px;
   height: 32px;
-  place-items: center;
-  border-radius: 50%;
-  color: #111;
-  font: 800 13px Manrope, system-ui, sans-serif;
+  object-fit: contain;
+  background: transparent;
+  transition: transform .2s ease;
+}
+
+.sev-social-buttons button:hover .sev-social-icon {
+  transform: scale(1.08);
 }
 
 .sev-social-label {
   display: none;
 }
-
-.sev-social-google { background: #fff; }
-.sev-social-microsoft { background: #dfeeff; }
-.sev-social-apple { background: #fff; }
-.sev-social-github { background: #fff; }
 
 .sev-optional {
   color: #999;

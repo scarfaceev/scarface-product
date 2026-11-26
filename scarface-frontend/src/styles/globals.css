@@ -455,3 +455,55 @@ h3,
   font-size:24px;
   line-height:1.2;
 }
+
+main.login-restriction-active > section:nth-of-type(n + 4),
+main.login-restriction-active ~ footer{
+  filter:blur(8px);
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+.login-restriction-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:90;
+  background:rgba(5,12,18,.28);
+  pointer-events:none;
+}
+
+.login-restriction-popup{
+  position:fixed;
+  top:50%;
+  left:50%;
+  z-index:91;
+  width:min(100vw,600px);
+  transform:translate(-50%,-50%);
+  animation:login-popup-fade-in .28s ease-out both;
+}
+
+.login-restriction-popup img{
+  display:block;
+  width:100%;
+  height:auto;
+  filter:drop-shadow(0 12px 22px rgba(0,0,0,.25));
+}
+
+.login-restriction-login{
+  position:absolute;
+  top:60.5%;
+  left:35.1%;
+  width:29.6%;
+  height:11.6%;
+  border-radius:999px;
+}
+
+.login-restriction-login:focus-visible{
+  outline:3px solid #fff;
+  outline-offset:3px;
+}
+
+@keyframes login-popup-fade-in{
+  from{opacity:0;transform:translate(-50%,-47%) scale(.98)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
