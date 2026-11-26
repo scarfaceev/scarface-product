@@ -15,6 +15,7 @@ import { services as defaultServices } from "./services/container.js";
 import type { AppDependencies } from "./app-types.js";
 import { AppError } from "./utils/app-error.js";
 import { openApiDocument } from "./openapi/document.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
 
 export function createApp(dependencies: AppDependencies = {}): Express {
   const services = dependencies.services ?? defaultServices;
@@ -46,6 +47,7 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   }));
 
   app.use("/api/v1", apiV1Router(services, databaseCheck));
+  app.use("/api/auth", authRouter());
 
   if (env.NODE_ENV !== "production") {
     app.get("/api/openapi.json", (_req, res) => res.json(openApiDocument));

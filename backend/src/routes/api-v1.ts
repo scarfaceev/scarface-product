@@ -7,6 +7,7 @@ import { installationRouter } from "../modules/installations/installation.routes
 import { jobRouter } from "../modules/jobs/job.routes.js";
 import { mediaRouter } from "../modules/media/media.routes.js";
 import { productRouter } from "../modules/products/product.routes.js";
+import { authRouter } from "../modules/auth/auth.routes.js";
 
 export function apiV1Router(services: AppServices, checkDatabase: () => Promise<void>): Router {
   const router = Router();
@@ -17,5 +18,6 @@ export function apiV1Router(services: AppServices, checkDatabase: () => Promise<
   router.use("/jobs", jobRouter(services.jobs, services.applications));
   router.use("/content", contentRouter(services.content));
   router.use("/media", mediaRouter(services.media));
+  router.use("/auth", authRouter());
   return router;
 }
