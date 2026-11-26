@@ -1,5 +1,9 @@
 import { useState } from "react";
 import logo from "../assets/logo/logo-removebg-preview.png";
+import googleIcon from "../assets/auth-providers/google.png";
+import microsoftIcon from "../assets/auth-providers/microsoft.png";
+import appleIcon from "../assets/auth-providers/apple.png";
+import githubIcon from "../assets/auth-providers/github.png";
 import "../styles/account-access.css";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -237,10 +241,10 @@ export default function Register({
         <div className="sev-social-section" aria-label="Social registration options">
           <div className="sev-social-divider"><span>Or continue with</span></div>
           <div className="sev-social-buttons">
-            <button type="button" disabled title="Google login is not configured"><span className="sev-social-google">G</span><span className="sev-social-label">Google</span></button>
-            <button type="button" disabled title="Microsoft login is not configured"><span className="sev-social-microsoft">M</span><span className="sev-social-label">Microsoft</span></button>
-            <button type="button" disabled title="Apple login is not configured"><span className="sev-social-apple">A</span><span className="sev-social-label">Apple</span></button>
-            <button type="button" disabled title="GitHub login is not configured"><span className="sev-social-github">GH</span><span className="sev-social-label">GitHub</span></button>
+            <button type="button" disabled title="Google login is not configured"><img className="sev-social-icon" src={googleIcon} alt="" /><span className="sev-social-label">Google</span></button>
+            <button type="button" disabled title="Microsoft login is not configured"><img className="sev-social-icon" src={microsoftIcon} alt="" /><span className="sev-social-label">Microsoft</span></button>
+            <button type="button" disabled title="Apple login is not configured"><img className="sev-social-icon" src={appleIcon} alt="" /><span className="sev-social-label">Apple</span></button>
+            <button type="button" disabled title="GitHub login is not configured"><img className="sev-social-icon" src={githubIcon} alt="" /><span className="sev-social-label">GitHub</span></button>
           </div>
         </div>
 
