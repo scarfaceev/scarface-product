@@ -14,6 +14,8 @@ const schema = z.object({
   CORS_ORIGINS: z.string().default("http://localhost:5173")
     .transform((value) => value.split(",").map((origin) => origin.trim()).filter(Boolean)),
   TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(10).default(0),
+  SESSION_SECRET: z.string().min(32).default("development-only-change-this-session-secret"),
+  SESSION_TTL_DAYS: z.coerce.number().int().min(1).max(30).default(7),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
   EMAIL_PROVIDER: z.enum(["disabled", "resend"]).default("disabled"),
   EMAIL_API_KEY: z.string().optional().default(""),
@@ -36,6 +38,9 @@ const schema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1_000).default(900_000),
   RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(30),
 }).superRefine((value, context) => {
+  if (value.NODE_ENV === "production" && value.SESSION_SECRET === "development-only-change-this-session-secret") {
+    context.addIssue({ code: "custom", path: ["SESSION_SECRET"], message: "Must be a unique secret in production." });
+  }
   if (value.EMAIL_PROVIDER === "resend") {
     if (!value.EMAIL_API_KEY) context.addIssue({ code: "custom", path: ["EMAIL_API_KEY"], message: "Required when EMAIL_PROVIDER=resend." });
     if (!value.EMAIL_FROM) context.addIssue({ code: "custom", path: ["EMAIL_FROM"], message: "Required when EMAIL_PROVIDER=resend." });
