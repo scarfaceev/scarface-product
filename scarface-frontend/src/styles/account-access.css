@@ -360,8 +360,7 @@ body:has(.sev-account-page) {
   width: 32px;
   height: 32px;
   object-fit: contain;
-  border-radius: 50%;
-  background: #fff;
+  background: transparent;
   transition: transform .2s ease;
 }
 
