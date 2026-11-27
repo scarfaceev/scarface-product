@@ -1,33 +1,10 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import Hero from "../components/Hero";
 import { ProductShowcase, Features, WhyChoose, Installation, ProductGallery, Datasheet, FAQ, FinalCTA, ContactSection, About, Sustainability } from "../components/Sections";
-import { authApiUrl } from "../utils/auth-api.js";
 const Product3DViewer = lazy(() => import("../components/Product3DViewer"));
-export default function Home() {
+export default function Home({ isAuthenticated = false }) {
   const mainRef = useRef(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isRestrictedArea, setIsRestrictedArea] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    fetch(authApiUrl("me"), { credentials: "include" })
-      .then((response) => {
-        if (!active) return;
-        setIsAuthenticated(response.ok);
-        if (!response.ok && response.status !== 401) {
-          console.error(`Unable to verify the current session (HTTP ${response.status}).`);
-        }
-      })
-      .catch((error) => {
-        if (!active) return;
-        console.error("Unable to verify the current session.", error);
-        setIsAuthenticated(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   useEffect(() => {
     const main = mainRef.current;
