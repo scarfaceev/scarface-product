@@ -11,12 +11,21 @@ export default function App() {
   useEffect(() => {
     let active = true;
     fetch(authApiUrl("me"), { credentials: "include" })
-      .then((response) => {
+      .then(async (response) => {
         if (!active) return;
-        setIsAuthenticated(response.ok);
-        if (!response.ok && response.status !== 401) {
-          console.error(`Unable to verify the current session (HTTP ${response.status}).`);
+        if (!response.ok) {
+          setIsAuthenticated(false);
+          if (response.status !== 401) {
+            console.error(`Unable to verify the current session (HTTP ${response.status}).`);
+          }
+          return;
         }
+        const payload = await response.json();
+        if (!payload?.data?.phone) {
+          window.location.replace("./complete-profile.html");
+          return;
+        }
+        setIsAuthenticated(true);
       })
       .catch((error) => {
         if (!active) return;

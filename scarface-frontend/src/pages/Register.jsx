@@ -2,12 +2,13 @@ import { useState } from "react";
 import logo from "../assets/logo/logo-removebg-preview.png";
 import SocialAuthButtons from "../components/SocialAuthButtons.jsx";
 import { authApiUrl } from "../utils/auth-api.js";
+import { oauthErrorMessage } from "../utils/oauth-errors.js";
 import "../styles/account-access.css";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const gmailPattern = /^[^\s@]+@gmail\.com$/i;
 const phonePattern = /^\+?[0-9][0-9\s().-]*$/;
-const registrationFields = new Set(["fullName", "email", "phone", "password"]);
+const registrationFields = new Set(["fullName", "email", "phone", "password", "termsAccepted"]);
 
 function getPasswordError(password) {
   if (!password) return "";
@@ -52,11 +53,12 @@ export default function Register({
     phone: "",
     password: "",
     confirmPassword: "",
+    termsAccepted: false,
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [serverError, setServerError] = useState("");
+  const [serverError, setServerError] = useState(() => oauthErrorMessage(window.location.search));
   const [submitting, setSubmitting] = useState(false);
 
   const updateField = (event) => {
@@ -107,6 +109,7 @@ export default function Register({
     else if (values.password !== values.confirmPassword) {
       nextErrors.confirmPassword = "The passwords do not match.";
     }
+    if (!values.termsAccepted) nextErrors.termsAccepted = "Accept the Terms and Conditions and Privacy Policy to continue.";
     return nextErrors;
   };
 
@@ -130,6 +133,7 @@ export default function Register({
           email: values.email.trim(),
           phone: values.phone.trim(),
           password: values.password,
+          termsAccepted: values.termsAccepted,
         }),
       });
       const payload = await response.json();
@@ -273,6 +277,23 @@ export default function Register({
             {errors.confirmPassword && <span className="sev-account-error" id="sev-register-confirm-error" role="alert">{errors.confirmPassword}</span>}
           </div>
 
+          <div className="sev-account-field">
+            <label className="sev-check-label sev-terms-label" htmlFor="sev-register-terms">
+              <input
+                id="sev-register-terms"
+                name="termsAccepted"
+                type="checkbox"
+                checked={values.termsAccepted}
+                onChange={updateField}
+                aria-invalid={Boolean(errors.termsAccepted)}
+                aria-describedby={errors.termsAccepted ? "sev-register-terms-error" : undefined}
+                required
+              />
+              <span>I agree to the Terms and Conditions and Privacy Policy.</span>
+            </label>
+            {errors.termsAccepted && <span className="sev-account-error" id="sev-register-terms-error" role="alert">{errors.termsAccepted}</span>}
+          </div>
+
           <button className="sev-account-submit" type="submit" disabled={submitting}>{submitting ? "Creating account..." : "Create Account"}</button>
           {serverError && <p className="sev-account-error" role="alert">{serverError}</p>}
         </form>
@@ -281,6 +302,7 @@ export default function Register({
           label="Social registration options"
           excludeProviders={["microsoft", "github"]}
           centered
+          authPage="register"
         />
 
         <p className="sev-account-switch">
