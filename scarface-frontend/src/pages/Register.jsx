@@ -1,12 +1,24 @@
 import { useState } from "react";
 import logo from "../assets/logo/logo-removebg-preview.png";
-import googleIcon from "../assets/auth-providers/google.png";
-import microsoftIcon from "../assets/auth-providers/microsoft.png";
-import appleIcon from "../assets/auth-providers/apple.png";
-import githubIcon from "../assets/auth-providers/github.png";
+import SocialAuthButtons from "../components/SocialAuthButtons.jsx";
+import { authApiUrl } from "../utils/auth-api.js";
 import "../styles/account-access.css";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phonePattern = /^\+?[0-9][0-9\s().-]*$/;
+const registrationFields = new Set(["fullName", "email", "phone", "password", "termsAccepted"]);
+
+function readFieldErrors(payload) {
+  const fieldErrors = {};
+  if (Array.isArray(payload?.error?.fields)) {
+    for (const issue of payload.error.fields) {
+      if (registrationFields.has(issue.path) && !fieldErrors[issue.path] && typeof issue.message === "string") {
+        fieldErrors[issue.path] = issue.message;
+      }
+    }
+  }
+  return fieldErrors;
+}
 
 export default function Register({
   loginHref = "./login.html",
@@ -28,19 +40,38 @@ export default function Register({
 
   const updateField = (event) => {
     const { name, type, value, checked } = event.target;
+    setServerError("");
     setValues((current) => ({
       ...current,
       [name]: type === "checkbox" ? checked : value,
     }));
-    setErrors((current) => current[name] ? { ...current, [name]: "" } : current);
+    setErrors((current) => {
+      const next = { ...current };
+      delete next[name];
+      if (name === "password") delete next.confirmPassword;
+      return next;
+    });
   };
 
   const validate = () => {
     const nextErrors = {};
-    if (!values.fullName.trim()) nextErrors.fullName = "Enter your full name.";
-    if (!values.email.trim()) nextErrors.email = "Enter your email address.";
-    else if (!emailPattern.test(values.email.trim())) nextErrors.email = "Enter a valid email address.";
+    const fullName = values.fullName.trim();
+    const email = values.email.trim();
+    const phone = values.phone.trim();
+    if (!fullName) nextErrors.fullName = "Enter your full name.";
+    else if (fullName.length < 2) nextErrors.fullName = "Full name must be at least 2 characters.";
+    else if (fullName.length > 120) nextErrors.fullName = "Full name must be 120 characters or fewer.";
+    if (!email) nextErrors.email = "Enter your email address.";
+    else if (email.length > 254 || !emailPattern.test(email)) nextErrors.email = "Enter a valid email address.";
+    if (phone && (phone.length < 7 || phone.length > 32 || !phonePattern.test(phone))) {
+      nextErrors.phone = "Enter a valid phone number, or leave this field blank.";
+    }
     if (!values.password) nextErrors.password = "Enter a password.";
+    else if (values.password.length < 8) nextErrors.password = "Password must be at least 8 characters.";
+    else if (values.password.length > 128) nextErrors.password = "Password must be 128 characters or fewer.";
+    else if (!/[A-Z]/.test(values.password)) nextErrors.password = "Password must include an uppercase letter.";
+    else if (!/[a-z]/.test(values.password)) nextErrors.password = "Password must include a lowercase letter.";
+    else if (!/[0-9]/.test(values.password)) nextErrors.password = "Password must include a number.";
     if (!values.confirmPassword) nextErrors.confirmPassword = "Confirm your password.";
     else if (values.password !== values.confirmPassword) {
       nextErrors.confirmPassword = "The passwords do not match.";
@@ -51,6 +82,7 @@ export default function Register({
 
   const submit = async (event) => {
     event.preventDefault();
+    setServerError("");
     const nextErrors = validate();
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
@@ -58,9 +90,8 @@ export default function Register({
       return;
     }
     setSubmitting(true);
-    setServerError("");
     try {
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch(authApiUrl("register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -69,11 +100,18 @@ export default function Register({
           email: values.email.trim(),
           phone: values.phone.trim() || undefined,
           password: values.password,
+          termsAccepted: values.termsAccepted,
         }),
       });
       const payload = await response.json();
       if (!response.ok) {
-        setServerError(payload?.error?.message || "Registration could not be completed.");
+        const fieldErrors = readFieldErrors(payload);
+        if (Object.keys(fieldErrors).length > 0) {
+          setErrors((current) => ({ ...current, ...fieldErrors }));
+        }
+        setServerError(Object.keys(fieldErrors).length > 0
+          ? ""
+          : payload?.error?.message || "Registration could not be completed.");
         return;
       }
       window.location.href = homeHref;
@@ -147,7 +185,10 @@ export default function Register({
               placeholder="Phone number"
               value={values.phone}
               onChange={updateField}
+              aria-invalid={Boolean(errors.phone)}
+              aria-describedby={errors.phone ? "sev-register-phone-error" : undefined}
             />
+            {errors.phone && <span className="sev-account-error" id="sev-register-phone-error" role="alert">{errors.phone}</span>}
           </div>
 
           <div className="sev-account-field">
@@ -238,15 +279,7 @@ export default function Register({
           {serverError && <p className="sev-account-error" role="alert">{serverError}</p>}
         </form>
 
-        <div className="sev-social-section" aria-label="Social registration options">
-          <div className="sev-social-divider"><span>Or continue with</span></div>
-          <div className="sev-social-buttons">
-            <button type="button" disabled title="Google login is not configured"><img className="sev-social-icon" src={googleIcon} alt="" /><span className="sev-social-label">Google</span></button>
-            <button type="button" disabled title="Microsoft login is not configured"><img className="sev-social-icon" src={microsoftIcon} alt="" /><span className="sev-social-label">Microsoft</span></button>
-            <button type="button" disabled title="Apple login is not configured"><img className="sev-social-icon" src={appleIcon} alt="" /><span className="sev-social-label">Apple</span></button>
-            <button type="button" disabled title="GitHub login is not configured"><img className="sev-social-icon" src={githubIcon} alt="" /><span className="sev-social-label">GitHub</span></button>
-          </div>
-        </div>
+        <SocialAuthButtons label="Social registration options" />
 
         <p className="sev-account-switch">
           Already have an account? <a className="sev-account-link" href={loginHref}>Login</a>

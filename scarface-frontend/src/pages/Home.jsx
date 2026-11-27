@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import Hero from "../components/Hero";
 import { ProductShowcase, Features, WhyChoose, Installation, ProductGallery, Datasheet, FAQ, FinalCTA, ContactSection, About, Sustainability } from "../components/Sections";
+import { authApiUrl } from "../utils/auth-api.js";
 const Product3DViewer = lazy(() => import("../components/Product3DViewer"));
 export default function Home() {
   const mainRef = useRef(null);
@@ -9,7 +10,7 @@ export default function Home() {
 
   useEffect(() => {
     let active = true;
-    fetch("/api/auth/me", { credentials: "include" })
+    fetch(authApiUrl("me"), { credentials: "include" })
       .then((response) => {
         if (!active) return;
         setIsAuthenticated(response.ok);

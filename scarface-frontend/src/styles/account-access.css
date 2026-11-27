@@ -37,6 +37,26 @@ body:has(.sev-account-page) {
   padding: 10px clamp(0px, 9.2vw, 43px);
 }
 
+.sev-reset-card {
+  width: min(100%, 466px);
+  padding: 10px clamp(0px, 9.2vw, 43px);
+}
+
+.sev-reset-card .sev-account-heading {
+  margin-bottom: 12px;
+  font-size: 32px;
+  letter-spacing: -.025em;
+}
+
+.sev-reset-card .sev-account-subtitle {
+  display: block;
+  margin: 0 0 24px;
+  color: #aaa;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 .sev-account-logo-link {
   display: none;
 }
@@ -302,6 +322,12 @@ body:has(.sev-account-page) {
   line-height: 1.4;
 }
 
+.sev-account-success {
+  color: #85ddb5;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .sev-social-section {
   margin-top: 30px;
 }
@@ -334,24 +360,33 @@ body:has(.sev-account-page) {
   margin-top: 18px;
 }
 
-.sev-social-buttons button {
+.sev-social-form {
+  display: flex;
+  min-width: 0;
+  margin: 0;
+}
+
+.sev-social-button {
   display: grid;
   place-items: center;
+  width: 100%;
   min-width: 0;
   height: 58px;
   border: 1px solid #292929;
   border-radius: 12px;
   background: #090909;
-  color: #777;
-  cursor: not-allowed;
-  opacity: .72;
+  color: #f5f5f5;
+  cursor: pointer;
+  opacity: 1;
+  text-decoration: none;
+  padding: 0;
+  font: inherit;
   transition: background-color .2s ease, border-color .2s ease, opacity .2s ease, transform .2s ease;
 }
 
-.sev-social-buttons button:hover {
+.sev-social-button:hover {
   border-color: #555;
   background: #151515;
-  opacity: 1;
   transform: translateY(-2px);
 }
 
@@ -364,7 +399,7 @@ body:has(.sev-account-page) {
   transition: transform .2s ease;
 }
 
-.sev-social-buttons button:hover .sev-social-icon {
+.sev-social-button:hover .sev-social-icon {
   transform: scale(1.08);
 }
 
@@ -498,6 +533,10 @@ body:has(.sev-account-page) {
   }
 
   .sev-register-card {
+    padding: 10px clamp(0px, 9.2vw, 43px);
+  }
+
+  .sev-reset-card {
     padding: 10px clamp(0px, 9.2vw, 43px);
   }
 
