@@ -5,8 +5,30 @@ import { authApiUrl } from "../utils/auth-api.js";
 import "../styles/account-access.css";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const gmailPattern = /^[^\s@]+@gmail\.com$/i;
 const phonePattern = /^\+?[0-9][0-9\s().-]*$/;
-const registrationFields = new Set(["fullName", "email", "phone", "password", "termsAccepted"]);
+const registrationFields = new Set(["fullName", "email", "phone", "password"]);
+
+function getPasswordError(password) {
+  if (!password) return "";
+  if (password.length > 128) return "Password must be 128 characters or fewer.";
+  const missing = [];
+  const missingUppercase = !/[A-Z]/.test(password);
+  const missingLowercase = !/[a-z]/.test(password);
+  if (missingUppercase && missingLowercase) missing.push("upper and lower case letters");
+  else if (missingUppercase) missing.push("an upper case letter");
+  else if (missingLowercase) missing.push("a lower case letter");
+  if (!/[0-9]/.test(password)) missing.push("numbers");
+  if (!/[^A-Za-z0-9]/.test(password)) missing.push("a special character");
+  if (missing.length === 0) {
+    return password.length < 8 ? "Password must be at least 8 characters." : "";
+  }
+  const requirements = missing.length === 1
+    ? missing[0]
+    : `${missing.slice(0, -1).join(", ")}${missing.length > 2 ? "," : ""} and ${missing[missing.length - 1]}`;
+  const lengthRequirement = password.length < 8 ? " and be at least 8 characters" : "";
+  return `Password must include ${requirements}${lengthRequirement}.`;
+}
 
 function readFieldErrors(payload) {
   const fieldErrors = {};
@@ -30,7 +52,6 @@ export default function Register({
     phone: "",
     password: "",
     confirmPassword: "",
-    termsAccepted: false,
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -48,7 +69,14 @@ export default function Register({
     setErrors((current) => {
       const next = { ...current };
       delete next[name];
-      if (name === "password") delete next.confirmPassword;
+      if (name === "password") {
+        delete next.confirmPassword;
+        const passwordError = getPasswordError(value);
+        if (passwordError) next.password = passwordError;
+      }
+      if (name === "fullName" && value.trim() && !/^[A-Za-z ]+$/.test(value.trim())) {
+        next.fullName = "Enter a valid name.";
+      }
       return next;
     });
   };
@@ -59,24 +87,26 @@ export default function Register({
     const email = values.email.trim();
     const phone = values.phone.trim();
     if (!fullName) nextErrors.fullName = "Enter your full name.";
+    else if (!/^[A-Za-z ]+$/.test(fullName)) nextErrors.fullName = "Enter a valid name.";
     else if (fullName.length < 2) nextErrors.fullName = "Full name must be at least 2 characters.";
     else if (fullName.length > 120) nextErrors.fullName = "Full name must be 120 characters or fewer.";
     if (!email) nextErrors.email = "Enter your email address.";
-    else if (email.length > 254 || !emailPattern.test(email)) nextErrors.email = "Enter a valid email address.";
-    if (phone && (phone.length < 7 || phone.length > 32 || !phonePattern.test(phone))) {
-      nextErrors.phone = "Enter a valid phone number, or leave this field blank.";
+    else if (email.length > 254 || !emailPattern.test(email) || !gmailPattern.test(email)) {
+      nextErrors.email = "Enter a valid Gmail address";
+    }
+    if (!phone) nextErrors.phone = "Enter your phone number.";
+    else if (phone.length < 7 || phone.length > 32 || !phonePattern.test(phone)) {
+      nextErrors.phone = "Enter a valid phone number.";
     }
     if (!values.password) nextErrors.password = "Enter a password.";
-    else if (values.password.length < 8) nextErrors.password = "Password must be at least 8 characters.";
-    else if (values.password.length > 128) nextErrors.password = "Password must be 128 characters or fewer.";
-    else if (!/[A-Z]/.test(values.password)) nextErrors.password = "Password must include an uppercase letter.";
-    else if (!/[a-z]/.test(values.password)) nextErrors.password = "Password must include a lowercase letter.";
-    else if (!/[0-9]/.test(values.password)) nextErrors.password = "Password must include a number.";
+    else {
+      const passwordError = getPasswordError(values.password);
+      if (passwordError) nextErrors.password = passwordError;
+    }
     if (!values.confirmPassword) nextErrors.confirmPassword = "Confirm your password.";
     else if (values.password !== values.confirmPassword) {
       nextErrors.confirmPassword = "The passwords do not match.";
     }
-    if (!values.termsAccepted) nextErrors.termsAccepted = "Accept the Terms and Privacy Policy to continue.";
     return nextErrors;
   };
 
@@ -98,9 +128,8 @@ export default function Register({
         body: JSON.stringify({
           fullName: values.fullName.trim(),
           email: values.email.trim(),
-          phone: values.phone.trim() || undefined,
+          phone: values.phone.trim(),
           password: values.password,
-          termsAccepted: values.termsAccepted,
         }),
       });
       const payload = await response.json();
@@ -120,12 +149,6 @@ export default function Register({
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const openPolicy = (event, policy) => {
-    event.preventDefault();
-    event.stopPropagation();
-    window.dispatchEvent(new CustomEvent("scarface:open-policy", { detail: policy }));
   };
 
   return (
@@ -157,25 +180,7 @@ export default function Register({
           </div>
 
           <div className="sev-account-field">
-            <label htmlFor="sev-register-email">Email address</label>
-            <input
-              className="sev-account-input"
-              id="sev-register-email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              placeholder="mail@website.com"
-              value={values.email}
-              onChange={updateField}
-              aria-invalid={Boolean(errors.email)}
-              aria-describedby={errors.email ? "sev-register-email-error" : undefined}
-              required
-            />
-            {errors.email && <span className="sev-account-error" id="sev-register-email-error" role="alert">{errors.email}</span>}
-          </div>
-
-          <div className="sev-account-field">
-            <label htmlFor="sev-register-phone">Phone number <span className="sev-optional">(optional)</span></label>
+            <label htmlFor="sev-register-phone">Phone number</label>
             <input
               className="sev-account-input"
               id="sev-register-phone"
@@ -187,8 +192,27 @@ export default function Register({
               onChange={updateField}
               aria-invalid={Boolean(errors.phone)}
               aria-describedby={errors.phone ? "sev-register-phone-error" : undefined}
+              required
             />
             {errors.phone && <span className="sev-account-error" id="sev-register-phone-error" role="alert">{errors.phone}</span>}
+          </div>
+
+          <div className="sev-account-field">
+            <label htmlFor="sev-register-email">Email address</label>
+            <input
+              className="sev-account-input"
+              id="sev-register-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="mail@gmail.com"
+              value={values.email}
+              onChange={updateField}
+              aria-invalid={Boolean(errors.email)}
+              aria-describedby={errors.email ? "sev-register-email-error" : undefined}
+              required
+            />
+            {errors.email && <span className="sev-account-error" id="sev-register-email-error" role="alert">{errors.email}</span>}
           </div>
 
           <div className="sev-account-field">
@@ -249,37 +273,15 @@ export default function Register({
             {errors.confirmPassword && <span className="sev-account-error" id="sev-register-confirm-error" role="alert">{errors.confirmPassword}</span>}
           </div>
 
-          <div className="sev-account-field">
-            <label className="sev-check-label sev-terms-label" htmlFor="sev-register-terms">
-              <input
-                id="sev-register-terms"
-                name="termsAccepted"
-                type="checkbox"
-                checked={values.termsAccepted}
-                onChange={updateField}
-                aria-invalid={Boolean(errors.termsAccepted)}
-                aria-describedby={errors.termsAccepted ? "sev-register-terms-error" : undefined}
-                required
-              />
-              <span>
-                I agree to the{" "}
-                <a className="sev-account-link" href="#terms" onClick={(event) => openPolicy(event, "terms")}>
-                  Terms and Conditions
-                </a>{" "}
-                and{" "}
-                <a className="sev-account-link" href="#privacy" onClick={(event) => openPolicy(event, "privacy")}>
-                  Privacy Policy
-                </a>.
-              </span>
-            </label>
-            {errors.termsAccepted && <span className="sev-account-error" id="sev-register-terms-error" role="alert">{errors.termsAccepted}</span>}
-          </div>
-
           <button className="sev-account-submit" type="submit" disabled={submitting}>{submitting ? "Creating account..." : "Create Account"}</button>
           {serverError && <p className="sev-account-error" role="alert">{serverError}</p>}
         </form>
 
-        <SocialAuthButtons label="Social registration options" />
+        <SocialAuthButtons
+          label="Social registration options"
+          excludeProviders={["microsoft", "github"]}
+          centered
+        />
 
         <p className="sev-account-switch">
           Already have an account? <a className="sev-account-link" href={loginHref}>Login</a>

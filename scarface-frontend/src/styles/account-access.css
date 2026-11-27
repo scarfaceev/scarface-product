@@ -360,6 +360,15 @@ body:has(.sev-account-page) {
   margin-top: 18px;
 }
 
+.sev-social-buttons-centered {
+  display: flex;
+  justify-content: center;
+}
+
+.sev-social-buttons-centered .sev-social-form {
+  width: 74px;
+}
+
 .sev-social-form {
   display: flex;
   min-width: 0;

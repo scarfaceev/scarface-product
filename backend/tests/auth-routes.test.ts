@@ -34,9 +34,9 @@ const registeredUser = {
 };
 const validRegistration = {
   fullName: registeredUser.fullName,
-  email: " CUSTOMER@EXAMPLE.COM ",
-  password: "SecurePass123",
-  termsAccepted: true,
+  email: " CUSTOMER@GMAIL.COM ",
+  phone: "+1 555 123 4567",
+  password: "SecurePass123!",
 };
 
 describe("authentication routes", () => {
@@ -54,8 +54,11 @@ describe("authentication routes", () => {
   it.each([
     ["invalid email", { ...validRegistration, email: "not-an-email" }, "email"],
     ["missing required fields", {}, "fullName"],
+    ["non-Gmail email", { ...validRegistration, email: "customer@example.com" }, "email"],
+    ["invalid name", { ...validRegistration, fullName: "Example123" }, "fullName"],
+    ["missing phone", { ...validRegistration, phone: undefined }, "phone"],
     ["invalid password", { ...validRegistration, password: "weak" }, "password"],
-    ["missing terms agreement", { ...validRegistration, termsAccepted: undefined }, "termsAccepted"],
+    ["password without a special character", { ...validRegistration, password: "SecurePass123" }, "password"],
   ])("rejects %s before creating a user", async (_case, body, field) => {
     const response = await request(app).post("/api/auth/register").send(body);
 
@@ -65,32 +68,22 @@ describe("authentication routes", () => {
     expect(database.user.create).not.toHaveBeenCalled();
   });
 
-  it("creates a user with an optional phone and never returns the password hash", async () => {
+  it("creates a user without a terms checkbox and never returns the password hash", async () => {
     const response = await request(app).post("/api/auth/register").send(validRegistration);
 
     expect(response.status).toBe(201);
-    expect(database.user.findUnique).toHaveBeenCalledWith({ where: { email: "customer@example.com" } });
+    expect(database.user.findUnique).toHaveBeenCalledWith({ where: { email: "customer@gmail.com" } });
     expect(database.user.create).toHaveBeenCalledWith({
       data: {
         fullName: "Example Customer",
-        email: "customer@example.com",
-        phone: null,
+        email: "customer@gmail.com",
+        phone: "+1 555 123 4567",
         passwordHash: "hashed-password",
       },
     });
-    expect(passwordHasher.hash).toHaveBeenCalledWith("SecurePass123", 12);
+    expect(passwordHasher.hash).toHaveBeenCalledWith("SecurePass123!", 12);
     expect(response.body.data).not.toHaveProperty("passwordHash");
     expect(response.headers["set-cookie"]).toBeDefined();
-  });
-
-  it("normalizes an empty optional phone number to null", async () => {
-    await request(app)
-      .post("/api/auth/register")
-      .send({ ...validRegistration, phone: "   " });
-
-    expect(database.user.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ phone: null }),
-    });
   });
 
   it("rejects duplicate email addresses", async () => {
