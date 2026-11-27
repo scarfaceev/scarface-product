@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { brand } from "../data/brandData";
 
-const endpoint = import.meta.env.VITE_ENQUIRY_ENDPOINT;
+const endpoint = import.meta.env.VITE_ENQUIRY_ENDPOINT || "/api/v1/enquiries";
 const F = ({ n, label, err, ...p }) => (<label>{label}<input name={n} aria-invalid={!!err[n]} {...p} /><span className="err">{err[n]}</span></label>);
 
 export default function ContactForm() {
@@ -15,13 +15,11 @@ export default function ContactForm() {
     if (v("message").length < 10) er.message = "Please write at least 10 characters.";
     setErr(er); setMsg("");
     if (Object.keys(er).length) return;
-    if (endpoint) {
-      try {
-        const r = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(f)) });
-        if (!r.ok) throw new Error();
-        setMsg("Thanks – your enquiry has been sent."); form.reset();
-      } catch { setMsg("Sorry, we couldn’t send your enquiry. Please try again."); }
-    } else { setMsg("Your details passed validation. This site is frontend-only (no endpoint configured), so nothing has been sent yet."); form.reset(); }
+    try {
+      const r = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(f)) });
+      if (!r.ok) throw new Error();
+      setMsg("Thanks – your enquiry has been received. Our team will get back to you."); form.reset();
+    } catch { setMsg("Our enquiry service is temporarily unavailable. Please try again later."); }
   };
   return (
     <form noValidate onSubmit={submit}>
