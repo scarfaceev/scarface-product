@@ -11,12 +11,18 @@ const providers = [
   { id: "github", name: "GitHub", icon: githubIcon },
 ];
 
-export default function SocialAuthButtons({ label = "Social sign-in options" }) {
+export default function SocialAuthButtons({
+  label = "Social sign-in options",
+  excludeProviders = [],
+  centered = false,
+}) {
+  const visibleProviders = providers.filter((provider) => !excludeProviders.includes(provider.id));
+
   return (
     <div className="sev-social-section" aria-label={label}>
       <div className="sev-social-divider"><span>Or continue with</span></div>
-      <div className="sev-social-buttons">
-        {providers.map((provider) => (
+      <div className={`sev-social-buttons${centered ? " sev-social-buttons-centered" : ""}`}>
+        {visibleProviders.map((provider) => (
           <form
             key={provider.id}
             className="sev-social-form"
