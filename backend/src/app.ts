@@ -3,6 +3,7 @@ import express from "express";
 import type { Express } from "express";
 import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
+import pino from "pino";
 import { pinoHttp } from "pino-http";
 import swaggerUi from "swagger-ui-express";
 import { env } from "./config/env.js";
@@ -22,11 +23,7 @@ export function createApp(dependencies: AppDependencies = {}): Express {
   const databaseCheck = dependencies.checkDatabase ?? checkDatabase;
   const app = express();
   const allowedOrigins = new Set([env.FRONTEND_URL, ...env.CORS_ORIGINS]);
-
-  app.disable("x-powered-by");
-  app.set("trust proxy", env.TRUST_PROXY_HOPS);
-  app.use(helmet());
-  app.use(cors({
+  const corsMiddleware = cors({
     credentials: true,
     origin(origin, callback) {
       if (!origin || allowedOrigins.has(origin)) {
@@ -35,10 +32,34 @@ export function createApp(dependencies: AppDependencies = {}): Express {
       }
       callback(new AppError(403, "ORIGIN_NOT_ALLOWED", "This origin is not allowed."));
     },
-  }));
+  });
+
+  app.disable("x-powered-by");
+  app.set("trust proxy", env.TRUST_PROXY_HOPS);
+  app.use(helmet());
+  app.use((req, res, next) => {
+    const appleOAuthCallback = req.method === "POST" &&
+      ["/api/auth/oauth/apple/callback", "/api/v1/auth/oauth/apple/callback"].includes(req.path);
+    if (appleOAuthCallback) {
+      next();
+      return;
+    }
+    corsMiddleware(req, res, next);
+  });
   app.use(express.json({ limit: env.MAX_JSON_BODY, strict: true }));
   app.use(express.urlencoded({ extended: false, limit: env.MAX_JSON_BODY, parameterLimit: 100 }));
-  app.use(pinoHttp({ logger }));
+  app.use(pinoHttp({
+    logger,
+    serializers: {
+      req(request) {
+        const serialized = pino.stdSerializers.req(request);
+        return {
+          ...serialized,
+          url: typeof serialized.url === "string" ? serialized.url.split("?")[0] : serialized.url,
+        };
+      },
+    },
+  }));
   app.use(rateLimit({
     windowMs: env.RATE_LIMIT_WINDOW_MS,
     limit: Math.max(env.RATE_LIMIT_MAX * 10, 300),

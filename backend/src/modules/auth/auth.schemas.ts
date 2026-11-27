@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const fullName = z.string().trim().min(2).max(120);
 const email = z.string().trim().email().max(254).transform((value) => value.toLowerCase());
-const password = z.string()
+export const passwordSchema = z.string()
   .min(8, "Password must be at least 8 characters.")
   .max(128)
   .regex(/[A-Z]/, "Password must include an uppercase letter.")
@@ -17,10 +17,18 @@ export const registerSchema = z.object({
   fullName,
   email,
   phone,
-  password,
+  password: passwordSchema,
+  termsAccepted: z.literal(true),
 }).strict();
 
 export const loginSchema = z.object({
   email,
   password: z.string().min(1).max(128),
+}).strict();
+
+export const passwordResetRequestSchema = z.object({ email }).strict();
+
+export const passwordResetSchema = z.object({
+  token: z.string().min(32).max(128),
+  password: passwordSchema,
 }).strict();

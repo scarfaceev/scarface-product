@@ -11,4 +11,14 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        login: "login.html",
+        register: "register.html",
+        resetPassword: "reset-password.html",
+      },
+    },
+  },
 });

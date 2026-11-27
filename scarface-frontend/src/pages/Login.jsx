@@ -1,10 +1,10 @@
 import { useState } from "react";
 import logo from "../assets/logo/logo-removebg-preview.png";
-import googleIcon from "../assets/auth-providers/google.png";
-import microsoftIcon from "../assets/auth-providers/microsoft.png";
-import appleIcon from "../assets/auth-providers/apple.png";
-import githubIcon from "../assets/auth-providers/github.png";
+import SocialAuthButtons from "../components/SocialAuthButtons.jsx";
+import { authApiUrl } from "../utils/auth-api.js";
 import "../styles/account-access.css";
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login({
   registerHref = "./register.html",
@@ -13,15 +13,32 @@ export default function Login({
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [serverError, setServerError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState(() => {
+    const oauthError = new URLSearchParams(window.location.search).get("oauthError");
+    if (oauthError === "not_configured") return "This sign-in provider is not configured yet.";
+    if (oauthError === "expired") return "Your sign-in attempt expired. Please try again.";
+    if (oauthError) return "Sign-in could not be completed. Please try again.";
+    return "";
+  });
   const [submitting, setSubmitting] = useState(false);
 
   const submit = async (event) => {
     event.preventDefault();
-    setSubmitting(true);
     setServerError("");
+    const nextErrors = {};
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) nextErrors.email = "Enter your email address.";
+    else if (normalizedEmail.length > 254 || !emailPattern.test(normalizedEmail)) {
+      nextErrors.email = "Enter a valid email address.";
+    }
+    if (!password) nextErrors.password = "Enter your password.";
+    else if (password.length > 128) nextErrors.password = "Password must be 128 characters or fewer.";
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+    setSubmitting(true);
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch(authApiUrl("login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -29,7 +46,18 @@ export default function Login({
       });
       const payload = await response.json();
       if (!response.ok) {
-        setServerError(payload?.error?.message || "Login could not be completed.");
+        const fieldErrors = {};
+        if (Array.isArray(payload?.error?.fields)) {
+          for (const issue of payload.error.fields) {
+            if (["email", "password"].includes(issue.path) && !fieldErrors[issue.path] && typeof issue.message === "string") {
+              fieldErrors[issue.path] = issue.message;
+            }
+          }
+        }
+        setErrors((current) => ({ ...current, ...fieldErrors }));
+        setServerError(Object.keys(fieldErrors).length > 0
+          ? ""
+          : payload?.error?.message || "Login could not be completed.");
         return;
       }
       window.location.href = homeHref;
@@ -49,7 +77,7 @@ export default function Login({
         <h1 className="sev-account-heading" id="sev-login-heading">Login</h1>
         <p className="sev-account-subtitle">Continue to Scarface EV.</p>
 
-        <form className="sev-account-form" onSubmit={submit}>
+        <form className="sev-account-form" onSubmit={submit} noValidate>
           <div className="sev-account-field">
             <label htmlFor="sev-login-email">Email address</label>
             <input
@@ -60,9 +88,20 @@ export default function Login({
               autoComplete="email"
               placeholder="mail@website.com"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setServerError("");
+                setErrors((current) => {
+                  const next = { ...current };
+                  delete next.email;
+                  return next;
+                });
+              }}
+              aria-invalid={Boolean(errors.email)}
+              aria-describedby={errors.email ? "sev-login-email-error" : undefined}
               required
             />
+            {errors.email && <span className="sev-account-error" id="sev-login-email-error" role="alert">{errors.email}</span>}
           </div>
 
           <div className="sev-account-field">
@@ -76,7 +115,17 @@ export default function Login({
                 autoComplete="current-password"
                 placeholder="Min. 8 character"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  setServerError("");
+                  setErrors((current) => {
+                    const next = { ...current };
+                    delete next.password;
+                    return next;
+                  });
+                }}
+                aria-invalid={Boolean(errors.password)}
+                aria-describedby={errors.password ? "sev-login-password-error" : undefined}
                 required
               />
               <button
@@ -89,6 +138,7 @@ export default function Login({
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
+            {errors.password && <span className="sev-account-error" id="sev-login-password-error" role="alert">{errors.password}</span>}
           </div>
 
           <div className="sev-account-options">
@@ -96,7 +146,7 @@ export default function Login({
               <input id="sev-remember-me" name="rememberMe" type="checkbox" />
               <span>Remember me</span>
             </label>
-            <a className="sev-account-link" href="#forgot-password">
+            <a className="sev-account-link" href="./reset-password.html">
               Forgot password?
             </a>
           </div>
@@ -105,15 +155,7 @@ export default function Login({
           {serverError && <p className="sev-account-error" role="alert">{serverError}</p>}
         </form>
 
-        <div className="sev-social-section" aria-label="Social login options">
-          <div className="sev-social-divider"><span>Or continue with</span></div>
-          <div className="sev-social-buttons">
-            <button type="button" disabled title="Google login is not configured"><img className="sev-social-icon" src={googleIcon} alt="" /><span className="sev-social-label">Google</span></button>
-            <button type="button" disabled title="Microsoft login is not configured"><img className="sev-social-icon" src={microsoftIcon} alt="" /><span className="sev-social-label">Microsoft</span></button>
-            <button type="button" disabled title="Apple login is not configured"><img className="sev-social-icon" src={appleIcon} alt="" /><span className="sev-social-label">Apple</span></button>
-            <button type="button" disabled title="GitHub login is not configured"><img className="sev-social-icon" src={githubIcon} alt="" /><span className="sev-social-label">GitHub</span></button>
-          </div>
-        </div>
+        <SocialAuthButtons label="Social login options" />
 
         <p className="sev-account-switch">
           Not registered yet? <a className="sev-account-link" href={registerHref}>Create an Account</a>

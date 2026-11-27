@@ -120,6 +120,27 @@ describe("public API", () => {
     expect(response.body.error.code).toBe("ORIGIN_NOT_ALLOWED");
   });
 
+  it("rejects non-allowlisted origins on authentication endpoints", async () => {
+    const response = await request(app())
+      .post("/api/auth/login")
+      .set("Origin", "https://untrusted.example")
+      .send({ email: "person@example.com", password: "PassWord123" });
+
+    expect(response.status).toBe(403);
+    expect(response.body.error.code).toBe("ORIGIN_NOT_ALLOWED");
+  });
+
+  it("accepts Apple's form-post callback origin for OAuth state validation", async () => {
+    const response = await request(app())
+      .post("/api/auth/oauth/apple/callback")
+      .set("Origin", "https://appleid.apple.com")
+      .type("form")
+      .send({ code: "provider-code", state: "provider-state" });
+
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toContain("oauthError=expired");
+  });
+
   it("reports database health without exposing internal errors", async () => {
     const response = await request(createApp({
       services,

@@ -2,7 +2,7 @@
 
 ScarfaceEV is a responsive, single-page website for showcasing the company's EV charging products and providing contact/enquiry paths. The frontend is a React application built with Vite and is maintained in [`scarface-frontend/`](./scarface-frontend/).
 
-The React frontend is under [`scarface-frontend/`](./scarface-frontend/). A separate API service is under [`backend/`](./backend/), built with Node.js, Express, TypeScript, PostgreSQL, and Prisma. The current backend provides public endpoints for enquiries, products, installation requests, jobs/applications, CMS pages, and public media. Login/registration and public admin APIs are intentionally not implemented.
+The React frontend is under [`scarface-frontend/`](./scarface-frontend/). A separate API service is under [`backend/`](./backend/), built with Node.js, Express, TypeScript, PostgreSQL, and Prisma. The backend provides public endpoints for enquiries, products, installation requests, jobs/applications, CMS pages, and public media, as well as email/password and configured OAuth authentication. Public admin APIs are intentionally not implemented.
 
 ## Contents
 
@@ -85,6 +85,9 @@ scarfaceev-website/
     ├── .env.example
     ├── ATTRIBUTION.md
     ├── index.html
+    ├── login.html
+    ├── register.html
+    ├── reset-password.html
     ├── package.json
     ├── package-lock.json
     ├── vite.config.js
@@ -186,9 +189,9 @@ npm run dev
 
 Configure `DATABASE_URL` in `backend/.env` for your PostgreSQL database before running migrations. Prisma schema changes and the available database scripts are documented in [`backend/README.md`](./backend/README.md). Backend environment options, including optional email and storage provider settings, are listed in [`backend/.env.example`](./backend/.env.example); do not commit `.env` or put backend secrets in frontend variables.
 
-The public API is mounted at `/api/v1`: it supports health checks, enquiries, published products, installation requests, published jobs and applications, published CMS pages, and public media retrieval. Admin APIs and authentication are not implemented. In development, Swagger UI and the OpenAPI document are available at `/api/docs` and `/api/openapi.json`. The full endpoint list and behavior are in [`backend/README.md`](./backend/README.md).
+The public API is mounted at `/api/v1`: it supports health checks, enquiries, published products, installation requests, published jobs and applications, published CMS pages, and public media retrieval. Authentication is available at `/api/auth` and `/api/v1/auth`, including registration, login, session lookup/logout, password reset, and OAuth provider callbacks. Admin APIs are not implemented. In development, Swagger UI and the OpenAPI document are available at `/api/docs` and `/api/openapi.json`. The full endpoint list and behavior are in [`backend/README.md`](./backend/README.md).
 
-The frontend's [`.env.example`](./scarface-frontend/.env.example) sets `VITE_ENQUIRY_ENDPOINT=/api/v1/enquiries`. In development, [vite.config.js](./scarface-frontend/vite.config.js) proxies `/api` to `http://localhost:3001`. Start PostgreSQL and the backend before testing form submissions. In production, route `/api` to the backend or configure the frontend endpoint to the API's public URL.
+The frontend's [`.env.example`](./scarface-frontend/.env.example) sets `VITE_ENQUIRY_ENDPOINT=/api/v1/enquiries`. In development, [vite.config.js](./scarface-frontend/vite.config.js) proxies `/api` to `http://localhost:3001`. Start PostgreSQL and the backend before testing form submissions. In production, route `/api` to the backend or configure the frontend endpoint to the API's public URL. When the auth API uses a separate public host, set `VITE_API_BASE_URL` to that origin and set backend `BACKEND_URL` to the same origin so OAuth callbacks and session cookies share a host.
 
 ## Configuration and integrations
 
