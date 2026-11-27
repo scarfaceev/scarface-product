@@ -32,9 +32,147 @@ body:has(.sev-account-page) {
   box-shadow: none;
 }
 
-.sev-register-card {
+.sev-register-card,
+.sev-login-card {
   width: min(100%, 466px);
-  padding: 10px clamp(0px, 9.2vw, 43px);
+  padding: 28px clamp(22px, 7vw, 38px);
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .045));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, .48), inset 0 1px 0 rgba(255, 255, 255, .18);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+}
+
+.sev-login-card {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.sev-account-page:has(.sev-login-card) {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.sev-account-page:has(.sev-register-card),
+.sev-account-page:has(.sev-login-card) {
+  background: #000;
+}
+
+.sev-login-card .sev-account-heading {
+  margin-bottom: 22px;
+  font-size: 32px;
+  letter-spacing: -.025em;
+}
+
+.sev-login-card .sev-account-form {
+  gap: 14px;
+}
+
+.sev-login-card .sev-account-field {
+  gap: 6px;
+}
+
+.sev-login-card .sev-account-field > label {
+  font-size: 12px;
+}
+
+.sev-login-card .sev-account-input,
+.sev-login-card .sev-password-wrap {
+  height: 48px;
+  border-radius: 9px;
+  border-color: rgba(255, 255, 255, .14);
+  background: rgba(4, 10, 14, .42);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.sev-login-card .sev-account-input {
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+.sev-login-card .sev-password-wrap .sev-account-input {
+  padding: 10px 6px 10px 16px;
+}
+
+.sev-login-card .sev-password-toggle {
+  min-width: 36px;
+  min-height: 36px;
+  margin-right: 4px;
+}
+
+.sev-login-card .sev-account-input:focus,
+.sev-login-card .sev-password-wrap:focus-within {
+  border-color: rgba(103, 226, 212, .82);
+  outline: 2px solid rgba(103, 226, 212, .18);
+  box-shadow: 0 0 20px rgba(39, 195, 178, .12);
+}
+
+.sev-login-card .sev-account-input[aria-invalid="true"],
+.sev-login-card .sev-password-wrap:has(.sev-account-input[aria-invalid="true"]) {
+  border-color: #e05c5c;
+}
+
+.sev-login-card .sev-password-wrap .sev-account-input {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.sev-login-card .sev-social-button {
+  border-color: rgba(255, 255, 255, .14);
+  background: rgba(255, 255, 255, .06);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.sev-login-card .sev-social-button:hover {
+  border-color: rgba(255, 255, 255, .3);
+  background: rgba(255, 255, 255, .12);
+}
+
+.sev-login-card .sev-account-options {
+  font-size: 13px;
+}
+
+.sev-login-card .sev-check-label {
+  gap: 9px !important;
+  font-size: 12px !important;
+}
+
+.sev-login-card .sev-check-label input {
+  width: 17px;
+  height: 17px;
+}
+
+.sev-login-card .sev-account-submit {
+  height: 46px;
+  margin-top: 0;
+  border-radius: 9px;
+  font-size: 14px;
+}
+
+.sev-login-card .sev-social-section {
+  margin-top: 16px;
+}
+
+.sev-login-card .sev-social-buttons {
+  margin-top: 12px;
+}
+
+.sev-login-card .sev-social-button {
+  height: 46px;
+  border-radius: 9px;
+}
+
+.sev-login-card .sev-account-switch {
+  margin: 18px 0 8px;
+  font-size: 12px;
+}
+
+.sev-login-card .sev-account-home {
+  font-size: 11px;
 }
 
 .sev-reset-card {
@@ -265,6 +403,10 @@ body:has(.sev-account-page) {
 .sev-register-card .sev-password-wrap {
   height: 46px;
   border-radius: 9px;
+  border-color: rgba(255, 255, 255, .14);
+  background: rgba(4, 10, 14, .42);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .sev-register-card .sev-account-input {
@@ -272,8 +414,23 @@ body:has(.sev-account-page) {
   font-size: 14px;
 }
 
+.sev-register-card .sev-account-input:focus,
+.sev-register-card .sev-password-wrap:focus-within {
+  border-color: rgba(103, 226, 212, .82);
+  outline: 2px solid rgba(103, 226, 212, .18);
+  box-shadow: 0 0 20px rgba(39, 195, 178, .12);
+}
+
+.sev-register-card .sev-account-input[aria-invalid="true"],
+.sev-register-card .sev-password-wrap:has(.sev-account-input[aria-invalid="true"]) {
+  border-color: #e05c5c;
+}
+
 .sev-register-card .sev-password-wrap .sev-account-input {
   padding: 10px 6px 10px 16px;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .sev-register-card .sev-password-toggle {
@@ -286,7 +443,14 @@ body:has(.sev-account-page) {
   height: 46px;
   margin-top: 4px;
   border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(255, 255, 255, .12);
   font-size: 14px;
+}
+
+.sev-register-card .sev-account-submit:hover {
+  background: #e8e8e8;
+  box-shadow: 0 10px 28px rgba(255, 255, 255, .18);
 }
 
 .sev-account-switch {
@@ -299,6 +463,18 @@ body:has(.sev-account-page) {
 .sev-register-card .sev-account-switch {
   margin-top: 30px;
   font-size: 12px;
+}
+
+.sev-register-card .sev-social-button {
+  border-color: rgba(255, 255, 255, .14);
+  background: rgba(255, 255, 255, .06);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.sev-register-card .sev-social-button:hover {
+  border-color: rgba(255, 255, 255, .3);
+  background: rgba(255, 255, 255, .12);
 }
 
 .sev-account-home {
@@ -358,6 +534,15 @@ body:has(.sev-account-page) {
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   margin-top: 18px;
+}
+
+.sev-social-buttons-centered {
+  display: flex;
+  justify-content: center;
+}
+
+.sev-social-buttons-centered .sev-social-form {
+  width: 74px;
 }
 
 .sev-social-form {
@@ -532,7 +717,17 @@ body:has(.sev-account-page) {
     font-size: 32px;
   }
 
-  .sev-register-card {
+  .sev-register-card,
+  .sev-login-card {
+    padding: 24px clamp(18px, 7vw, 32px);
+  }
+
+  .sev-login-card {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .sev-reset-card {
     padding: 10px clamp(0px, 9.2vw, 43px);
   }
 
@@ -618,6 +813,39 @@ body:has(.sev-account-page) {
   .sev-explore-dialog {
     padding: 28px 22px 26px;
     border-radius: 22px;
+  }
+}
+
+@media (max-height: 680px) {
+  .sev-account-page:has(.sev-login-card) {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .sev-login-card {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .sev-login-card .sev-account-heading {
+    margin-bottom: 14px;
+  }
+
+  .sev-login-card .sev-account-form {
+    gap: 10px;
+  }
+
+  .sev-login-card .sev-social-section {
+    margin-top: 10px;
+  }
+
+  .sev-login-card .sev-social-button {
+    height: 42px;
+  }
+
+  .sev-login-card .sev-account-switch {
+    margin-top: 12px;
+    margin-bottom: 6px;
   }
 }
 

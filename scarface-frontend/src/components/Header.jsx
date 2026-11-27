@@ -3,12 +3,20 @@ import { Menu, X, ArrowRight, Plus, Minus } from "lucide-react";
 import { nav } from "../data/navigationData";
 import Logo from "./Logo";
 
-export default function Header() {
-  const [cur, setCur] = useState(null), [last, setLast] = useState(0), [mob, setMob] = useState(false);
+export default function Header({ isAuthenticated, onLogout }) {
+  const [cur, setCur] = useState(null), [mob, setMob] = useState(false);
   const [openSub, setOpenSub] = useState(null), [scrolled, setScrolled] = useState(false), [active, setActive] = useState("home"), [homeVisible, setHomeVisible] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false), [logoutError, setLogoutError] = useState("");
   const t = useRef();
-  const show = (i) => { clearTimeout(t.current); setCur(i); setLast(i); };
+  const show = (i) => { clearTimeout(t.current); setCur(i); };
   const hide = () => { t.current = setTimeout(() => setCur(null), 180); };
+  const visibleNav = isAuthenticated ? nav.filter((item) => item.label !== "Sustainable") : nav;
+
+  useEffect(() => {
+    setCur(null);
+    setMob(false);
+    setOpenSub(null);
+  }, [isAuthenticated]);
 
   useLayoutEffect(() => {
     const home = document.getElementById("home");
@@ -30,13 +38,28 @@ export default function Header() {
     return () => io.disconnect();
   }, []);
 
-  const m = nav[last];
+  const logout = async () => {
+    setLogoutError("");
+    setIsLoggingOut(true);
+    try {
+      await onLogout();
+      setCur(null);
+      setMob(false);
+      setOpenSub(null);
+    } catch (error) {
+      console.error("Unable to log out.", error);
+      setLogoutError("Logout failed. Please try again.");
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <header id="hd" className={`${scrolled ? "s " : ""}${homeVisible ? "" : "offscreen"}`} aria-hidden={!homeVisible} onMouseLeave={hide} onMouseEnter={() => clearTimeout(t.current)}>
       <div className="bar">
         <Logo showName />
         <nav className="d" aria-label="Primary">
-          {nav.map((n, i) => (
+          {visibleNav.map((n, i) => (
             <div className="nav-item" key={n.label} onMouseEnter={() => show(i)} onMouseLeave={() => hide()}>
               <button aria-haspopup="true" aria-expanded={cur === i}
                 className={(cur === i ? "on " : "") + (cur === null && n.spy.includes(active) ? "cur" : "")}
@@ -53,17 +76,29 @@ export default function Header() {
               )}
             </div>
           ))}
+          {isAuthenticated && (
+            <button type="button" className="nav-logout" onClick={logout} disabled={isLoggingOut}>
+              {isLoggingOut ? "Logging out..." : "Logout"}
+            </button>
+          )}
         </nav>
         <button className="burger" aria-label={mob ? "Close menu" : "Open menu"} aria-expanded={mob} onClick={() => setMob(!mob)}>{mob ? <X size={22} /> : <Menu size={22} />}</button>
       </div>
       <div id="mob" className={mob ? "open" : ""}>
-        {nav.map((n, i) => (
+        {visibleNav.map((n, i) => (
           <div key={n.label}>
             <button aria-expanded={openSub === i} onClick={() => setOpenSub(openSub === i ? null : i)}>{n.label}{openSub === i ? <Minus size={18} /> : <Plus size={18} />}</button>
             <div className={"sub" + (openSub === i ? " open" : "")}>{n.links.map(([l, h]) => <a key={l} href={h} onClick={() => setMob(false)}>{l}</a>)}</div>
           </div>
         ))}
+        {isAuthenticated && (
+          <button type="button" className="nav-logout" onClick={logout} disabled={isLoggingOut}>
+            {isLoggingOut ? "Logging out..." : "Logout"}
+          </button>
+        )}
+        {logoutError && <p className="nav-logout-error" role="alert">{logoutError}</p>}
       </div>
+      {logoutError && <p className="nav-logout-error nav-logout-error-desktop" role="alert">{logoutError}</p>}
     </header>
   );
 }

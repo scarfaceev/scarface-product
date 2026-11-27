@@ -2,6 +2,7 @@ import { useState } from "react";
 import logo from "../assets/logo/logo-removebg-preview.png";
 import SocialAuthButtons from "../components/SocialAuthButtons.jsx";
 import { authApiUrl } from "../utils/auth-api.js";
+import { oauthErrorMessage, requestedLinkProvider } from "../utils/oauth-errors.js";
 import "../styles/account-access.css";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -14,13 +15,7 @@ export default function Login({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
-  const [serverError, setServerError] = useState(() => {
-    const oauthError = new URLSearchParams(window.location.search).get("oauthError");
-    if (oauthError === "not_configured") return "This sign-in provider is not configured yet.";
-    if (oauthError === "expired") return "Your sign-in attempt expired. Please try again.";
-    if (oauthError) return "Sign-in could not be completed. Please try again.";
-    return "";
-  });
+  const [serverError, setServerError] = useState(() => oauthErrorMessage(window.location.search));
   const [submitting, setSubmitting] = useState(false);
 
   const submit = async (event) => {
@@ -60,7 +55,10 @@ export default function Login({
           : payload?.error?.message || "Login could not be completed.");
         return;
       }
-      window.location.href = homeHref;
+      const linkProvider = requestedLinkProvider(window.location.search);
+      window.location.href = linkProvider
+        ? `./link-accounts.html?provider=${linkProvider}`
+        : payload?.data?.phone ? homeHref : "./complete-profile.html";
     } catch {
       setServerError("Unable to connect to the server. Please try again.");
     } finally {
@@ -155,7 +153,12 @@ export default function Login({
           {serverError && <p className="sev-account-error" role="alert">{serverError}</p>}
         </form>
 
-        <SocialAuthButtons label="Social login options" />
+        <SocialAuthButtons
+          label="Social login options"
+          excludeProviders={["microsoft", "github"]}
+          centered
+          authPage="login"
+        />
 
         <p className="sev-account-switch">
           Not registered yet? <a className="sev-account-link" href={registerHref}>Create an Account</a>

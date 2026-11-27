@@ -18,6 +18,8 @@ export default defineConfig({
         login: "login.html",
         register: "register.html",
         resetPassword: "reset-password.html",
+        completeProfile: "complete-profile.html",
+        linkAccounts: "link-accounts.html",
       },
     },
   },
