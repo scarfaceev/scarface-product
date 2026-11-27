@@ -88,12 +88,12 @@ See [.env.example](./.env.example). Important values:
 - `FRONTEND_URL`, `CORS_ORIGINS`, `TRUST_PROXY_HOPS`: browser origin and reverse-proxy settings.
 - `BACKEND_URL`: externally reachable API base URL used when constructing OAuth callback URIs.
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_TENANT_ID`, `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`: optional provider credentials; configure only on the backend.
-- `EMAIL_PROVIDER=disabled|resend`: defaults to disabled. When enabled, `EMAIL_API_KEY`, `EMAIL_FROM`, and `COMPANY_NOTIFICATION_EMAIL` are required.
+- `EMAIL_PROVIDER=disabled|resend`: defaults to disabled. To email website enquiries, set `EMAIL_PROVIDER=resend`, `EMAIL_API_KEY`, and `EMAIL_FROM`; `COMPANY_NOTIFICATION_EMAIL` defaults to `hasith@scarfaceev.com`. Configure a verified sender with your email provider before enabling delivery.
 - `SEND_CUSTOMER_ACK`: optional customer acknowledgement; false by default.
 - `STORAGE_PROVIDER=local|s3`: local storage is for development; configure private S3-compatible storage for production.
 - `MAX_RESUME_SIZE_BYTES`, `MAX_MEDIA_SIZE_BYTES`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`: bounded upload and rate-limit settings.
 
-Do not commit `.env`. Never put backend secrets in `VITE_` variables. With email disabled or the company recipient missing, enquiries still persist but no email is sent; the notification worker leaves queued records pending and logs the configuration state. This is intentional and must not be presented as successful delivery.
+Do not commit `.env`. Never put backend secrets in `VITE_` variables. With email disabled, enquiries still persist but no email is delivered; configure Resend to activate the notification worker. The frontend submits to `/api/v1/enquiries` by default, and the backend sends the full enquiry details (name, email, phone when provided, interest, and message) to `COMPANY_NOTIFICATION_EMAIL`.
 
 ## Data and modules
 

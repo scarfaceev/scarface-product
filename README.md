@@ -191,19 +191,19 @@ Configure `DATABASE_URL` in `backend/.env` for your PostgreSQL database before r
 
 The public API is mounted at `/api/v1`: it supports health checks, enquiries, published products, installation requests, published jobs and applications, published CMS pages, and public media retrieval. Authentication is available at `/api/auth` and `/api/v1/auth`, including registration, login, session lookup/logout, password reset, and OAuth provider callbacks. Admin APIs are not implemented. In development, Swagger UI and the OpenAPI document are available at `/api/docs` and `/api/openapi.json`. The full endpoint list and behavior are in [`backend/README.md`](./backend/README.md).
 
-The frontend's [`.env.example`](./scarface-frontend/.env.example) sets `VITE_ENQUIRY_ENDPOINT=/api/v1/enquiries`. In development, [vite.config.js](./scarface-frontend/vite.config.js) proxies `/api` to `http://localhost:3001`. Start PostgreSQL and the backend before testing form submissions. In production, route `/api` to the backend or configure the frontend endpoint to the API's public URL. When the auth API uses a separate public host, set `VITE_API_BASE_URL` to that origin and set backend `BACKEND_URL` to the same origin so OAuth callbacks and session cookies share a host.
+The enquiry form posts to `/api/v1/enquiries` by default; in development, [vite.config.js](./scarface-frontend/vite.config.js) proxies `/api` to `http://localhost:3001`. Start PostgreSQL and the backend before testing form submissions. To email full enquiry details to `hasith@scarfaceev.com`, configure the backend's Resend settings (`EMAIL_PROVIDER=resend`, `EMAIL_API_KEY`, and `EMAIL_FROM`); the recipient is the backend's default `COMPANY_NOTIFICATION_EMAIL`. In production, route `/api` to the backend or configure `VITE_ENQUIRY_ENDPOINT` to the API's public URL. When the auth API uses a separate public host, set `VITE_API_BASE_URL` to that origin and set backend `BACKEND_URL` to the same origin so OAuth callbacks and session cookies share a host.
 
 ## Configuration and integrations
 
 ### Enquiry endpoint
 
-The form reads `VITE_ENQUIRY_ENDPOINT`. To enable sending:
+The form posts to the included backend by default. To enable email delivery:
 
-1. From `scarface-frontend/`, copy `.env.example` to `.env`.
-2. Set `VITE_ENQUIRY_ENDPOINT` to the URL of an API that accepts a JSON `POST` request.
-3. Restart the Vite development server after changing the environment file.
+1. Configure the backend's `EMAIL_PROVIDER=resend`, `EMAIL_API_KEY`, and `EMAIL_FROM`.
+2. Keep `COMPANY_NOTIFICATION_EMAIL=hasith@scarfaceev.com` (the default) or set the desired recipient.
+3. Ensure the frontend hosting routes `/api` to the backend.
 
-Without this value, the form validates the fields and tells the visitor that no enquiry was sent. To send submissions to the backend included in this repository, use the endpoint shown in the frontend `.env.example` and start the backend.
+Enquiries are persisted and the full form details are included in the notification email. Email provider credentials must be configured on the backend, never in frontend `VITE_` variables.
 
 Vite embeds variables prefixed with `VITE_` into client-side code. Do not put credentials, private API keys, or other secrets in these variables. Configure any privileged credentials on the server that receives the request.
 

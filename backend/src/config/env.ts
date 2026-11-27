@@ -32,7 +32,7 @@ const schema = z.object({
   EMAIL_PROVIDER: z.enum(["disabled", "resend"]).default("disabled"),
   EMAIL_API_KEY: z.string().optional().default(""),
   EMAIL_FROM: z.string().optional().default(""),
-  COMPANY_NOTIFICATION_EMAIL: z.string().email().optional().or(z.literal("")).default(""),
+  COMPANY_NOTIFICATION_EMAIL: z.string().email().optional().or(z.literal("")).default("hasith@scarfaceev.com"),
   SEND_CUSTOMER_ACK: booleanFromEnv.default(false),
   EMAIL_POLL_INTERVAL_MS: z.coerce.number().int().min(1_000).max(300_000).default(5_000),
   EMAIL_MAX_RETRIES: z.coerce.number().int().min(1).max(20).default(5),
