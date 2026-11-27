@@ -731,6 +731,10 @@ body:has(.sev-account-page) {
     padding: 10px clamp(0px, 9.2vw, 43px);
   }
 
+  .sev-reset-card {
+    padding: 10px clamp(0px, 9.2vw, 43px);
+  }
+
   .sev-account-form,
   .sev-register-card .sev-account-form {
     gap: 17px;
