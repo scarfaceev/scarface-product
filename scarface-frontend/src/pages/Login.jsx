@@ -155,7 +155,11 @@ export default function Login({
           {serverError && <p className="sev-account-error" role="alert">{serverError}</p>}
         </form>
 
-        <SocialAuthButtons label="Social login options" />
+        <SocialAuthButtons
+          label="Social login options"
+          excludeProviders={["microsoft", "github"]}
+          centered
+        />
 
         <p className="sev-account-switch">
           Not registered yet? <a className="sev-account-link" href={registerHref}>Create an Account</a>
