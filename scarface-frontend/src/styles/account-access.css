@@ -754,6 +754,39 @@ body:has(.sev-account-page) {
   }
 }
 
+@media (max-height: 680px) {
+  .sev-account-page:has(.sev-login-card) {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .sev-login-card {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .sev-login-card .sev-account-heading {
+    margin-bottom: 14px;
+  }
+
+  .sev-login-card .sev-account-form {
+    gap: 10px;
+  }
+
+  .sev-login-card .sev-social-section {
+    margin-top: 10px;
+  }
+
+  .sev-login-card .sev-social-button {
+    height: 42px;
+  }
+
+  .sev-login-card .sev-account-switch {
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sev-account-input,
   .sev-account-submit {
