@@ -42,6 +42,7 @@ const schema = z.object({
   CORS_ORIGINS: z.string().default("")
     .transform((value) => value.split(",").map((origin) => origin.trim()).filter(Boolean)),
   TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(10).default(0),
+  CRON_SECRET: z.string().default(""),
   SESSION_TTL_DAYS: z.coerce.number().int().min(1).max(30).default(7),
   GOOGLE_CLIENT_ID: z.string().optional().default(""),
   GOOGLE_CLIENT_SECRET: z.string().optional().default(""),
@@ -78,6 +79,9 @@ const schema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(30),
 }).superRefine((value, context) => {
   if (value.NODE_ENV === "production") {
+    if (value.CRON_SECRET.length < 32) {
+      context.addIssue({ code: "custom", path: ["CRON_SECRET"], message: "Must be at least 32 characters in production." });
+    }
     if (isLoopbackUrl(value.DATABASE_URL)) {
       context.addIssue({ code: "custom", path: ["DATABASE_URL"], message: "A production database URL is required." });
     }

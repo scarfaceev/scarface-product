@@ -91,18 +91,20 @@ export class NotificationWorker {
     this.timer = undefined;
   }
 
-  async processBatch(): Promise<void> {
-    if (!this.provider || this.running) return;
+  async processBatch(maxItems = 10): Promise<boolean> {
+    if (!this.provider || this.running) return true;
     this.running = true;
     try {
       await this.releaseStaleClaims();
-      for (let index = 0; index < 10; index += 1) {
+      for (let index = 0; index < maxItems; index += 1) {
         const notification = await this.claimOne();
         if (!notification) break;
         await this.sendOne(notification);
       }
+      return true;
     } catch (error) {
       logger.error({ err: error }, "Notification worker batch failed");
+      return false;
     } finally {
       this.running = false;
     }
