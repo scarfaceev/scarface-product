@@ -232,9 +232,7 @@ Do not add externally sourced images, video, fonts, or models without checking t
 
 ## Production and deployment
 
-For Vercel, set the project root to `scarface-frontend`, install with `npm ci`, build with `npm run build`, and use `dist` as the output directory. Set `VITE_API_BASE_URL` to the public Render backend origin. The Vite configuration uses `base: "./"` and builds the homepage plus the explicit account pages as static HTML.
-
-For Render, set the service root to `backend`, build with `npm ci && npm run prisma:generate && npm run build`, and start with `npm start`. Configure the production environment and database before deploying; apply checked-in migrations with `npm run db:deploy` as a deliberate pre-deploy step. Set the Render health check to `/api/v1/health`. See [`backend/README.md`](./backend/README.md) for required settings, storage, email, and OAuth setup.
+Create two separate Vercel projects. For the frontend, set the project root to `scarface-frontend`, build with `npm run build`, and use `dist` as the output directory. For the backend, set the project root to `backend`, framework preset to Other, and build command to `npm run build`; leave the output directory and start command unset. Set frontend `VITE_API_BASE_URL` to the backend's public origin. The frontend and backend are independent Vercel projects, not a multi-service project. See [`backend/README.md`](./backend/README.md) for the backend environment, Neon, storage, email, OAuth, and migration requirements.
 
 ## Content and release checklist
 
