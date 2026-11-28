@@ -18,11 +18,15 @@ export const completeProfileSchema = z.object({
   phone: registrationPhone,
 }).strict();
 
+
 export const registerSchema = z.object({
   fullName: registrationName,
   email: registrationEmail,
   phone: registrationPhone,
   password: registrationPassword,
+  termsAccepted: z.literal(true, {
+    error: "You must accept the Terms and Conditions and Privacy Policy.",
+  }),
 }).strict();
 
 export const loginSchema = z.object({

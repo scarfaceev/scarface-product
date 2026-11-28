@@ -37,6 +37,7 @@ const validRegistration = {
   email: " CUSTOMER@GMAIL.COM ",
   phone: "+1 555 123 4567",
   password: "SecurePass123!",
+  termsAccepted: true,
 };
 
 describe("authentication routes", () => {
@@ -68,7 +69,17 @@ describe("authentication routes", () => {
     expect(database.user.create).not.toHaveBeenCalled();
   });
 
-  it("creates a user without a terms checkbox and never returns the password hash", async () => {
+  it("requires terms acceptance and never returns the password hash", async () => {
+    for (const termsAccepted of [undefined, false]) {
+      const rejected = await request(app)
+        .post("/api/auth/register")
+        .send({ ...validRegistration, termsAccepted });
+
+      expect(rejected.status).toBe(400);
+      expect(rejected.body.error.fields.map((issue: { path: string }) => issue.path)).toContain("termsAccepted");
+    }
+    expect(database.user.create).not.toHaveBeenCalled();
+
     const response = await request(app).post("/api/auth/register").send(validRegistration);
 
     expect(response.status).toBe(201);
