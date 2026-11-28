@@ -2,7 +2,7 @@ import cors from "cors";
 import express from "express";
 import type { Express } from "express";
 import { rateLimit } from "express-rate-limit";
-import * as helmetModule from "helmet";
+import helmet from "helmet";
 import pino from "pino";
 import { pinoHttp } from "pino-http";
 import swaggerUi from "swagger-ui-express";
@@ -36,7 +36,7 @@ export function createApp(dependencies: AppDependencies = {}): Express {
 
   app.disable("x-powered-by");
   app.set("trust proxy", env.TRUST_PROXY_HOPS);
-  app.use(helmetModule.default());
+  app.use(helmet());
   app.use((req, res, next) => {
     const appleOAuthCallback = req.method === "POST" &&
       ["/api/auth/oauth/apple/callback", "/api/v1/auth/oauth/apple/callback"].includes(req.path);
