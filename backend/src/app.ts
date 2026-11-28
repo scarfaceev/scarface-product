@@ -2,7 +2,7 @@ import cors from "cors";
 import express from "express";
 import type { Express } from "express";
 import { rateLimit } from "express-rate-limit";
-import helmet from "helmet";
+import { default as helmet } from "helmet";
 import pino from "pino";
 import { pinoHttp } from "pino-http";
 import swaggerUi from "swagger-ui-express";
