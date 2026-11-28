@@ -57,8 +57,6 @@ export class ProductService {
     features: unknown;
     specifications: unknown;
     publishedAt: Date | null;
-    media: Array<{ position: number; altText: string | null; mediaAsset: { id: string; visibility: string } }>;
-    datasheetMedia: { id: string; visibility: string } | null;
   }) {
     return {
       id: product.id,
@@ -69,12 +67,6 @@ export class ProductService {
       features: product.features,
       specifications: product.specifications,
       publishedAt: product.publishedAt,
-      images: product.media
-        .filter(({ mediaAsset }) => mediaAsset.visibility === "PUBLIC")
-        .map(({ mediaAsset, position, altText }) => ({ id: mediaAsset.id, url: `/api/v1/media/${mediaAsset.id}`, position, altText })),
-      datasheet: product.datasheetMedia?.visibility === "PUBLIC"
-        ? { id: product.datasheetMedia.id, url: `/api/v1/media/${product.datasheetMedia.id}` }
-        : null,
     };
   }
 }

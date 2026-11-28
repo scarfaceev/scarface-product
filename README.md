@@ -2,7 +2,7 @@
 
 ScarfaceEV is a responsive, single-page website for showcasing the company's EV charging products and providing contact/enquiry paths. The frontend is a React application built with Vite and is maintained in [`scarface-frontend/`](./scarface-frontend/).
 
-The React frontend is under [`scarface-frontend/`](./scarface-frontend/). A separate API service is under [`backend/`](./backend/), built with Node.js, Express, TypeScript, PostgreSQL, and Prisma. The backend provides public endpoints for enquiries, products, installation requests, jobs/applications, CMS pages, and public media, as well as email/password and configured OAuth authentication. Public admin APIs are intentionally not implemented.
+The React frontend is under [`scarface-frontend/`](./scarface-frontend/). A separate API service is under [`backend/`](./backend/), built with Node.js, Express, TypeScript, PostgreSQL, and Prisma. The backend provides public endpoints for enquiries, products, installation requests, jobs/applications, and CMS pages, as well as email/password and configured OAuth authentication. Public admin APIs are intentionally not implemented.
 
 ## Contents
 
@@ -183,9 +183,9 @@ npm run db:seed
 npm run dev
 ```
 
-Configure `DATABASE_URL` in `backend/.env` for your PostgreSQL database before running migrations. Prisma schema changes and the available database scripts are documented in [`backend/README.md`](./backend/README.md). Backend environment options, including optional email and storage provider settings, are listed in [`backend/.env.example`](./backend/.env.example); do not commit `.env` or put backend secrets in frontend variables.
+Configure `DATABASE_URL` in `backend/.env` for your PostgreSQL database before running migrations. Prisma schema changes and the available database scripts are documented in [`backend/README.md`](./backend/README.md). Backend environment options, including optional email settings, are listed in [`backend/.env.example`](./backend/.env.example); do not commit `.env` or put backend secrets in frontend variables.
 
-The public API is mounted at `/api/v1`: it supports health checks, enquiries, published products, installation requests, published jobs and applications, published CMS pages, and public media retrieval. Authentication is available at `/api/auth` and `/api/v1/auth`, including registration, login, session lookup/logout, password reset, and OAuth provider callbacks. Admin APIs are not implemented. In development, Swagger UI and the OpenAPI document are available at `/api/docs` and `/api/openapi.json`. The full endpoint list and behavior are in [`backend/README.md`](./backend/README.md).
+The public API is mounted at `/api/v1`: it supports health checks, enquiries, published products, installation requests, published jobs and text-based applications, and published CMS pages. Authentication is available at `/api/auth` and `/api/v1/auth`, including registration, login, session lookup/logout, password reset, and OAuth provider callbacks. Admin APIs are not implemented. In development, Swagger UI and the OpenAPI document are available at `/api/docs` and `/api/openapi.json`. The full endpoint list and behavior are in [`backend/README.md`](./backend/README.md).
 
 The enquiry form and account pages use the same API URL helper. In development, [vite.config.js](./scarface-frontend/vite.config.js) proxies `/api` to `http://localhost:3001`. For a separate production API host, set frontend `VITE_API_BASE_URL` to its public origin; the backend must allow the frontend origin through `FRONTEND_URL`/`CORS_ORIGINS`. If migrating from `VITE_ENQUIRY_ENDPOINT`, use `VITE_API_BASE_URL` for the API origin instead; leave it empty for the local Vite proxy. Enquiry mail is sent to backend-only `ENQUIRY_RECEIVER_EMAIL` through the configured Resend provider.
 
@@ -196,7 +196,7 @@ The enquiry form and account pages use the same API URL helper. In development, 
 The form posts to the included backend by default. To enable email delivery:
 
 1. Configure the backend's `EMAIL_PROVIDER=resend`, `EMAIL_API_KEY`, `EMAIL_FROM`, and `ENQUIRY_RECEIVER_EMAIL`.
-2. Ensure the frontend's `VITE_API_BASE_URL` points to the API origin and the backend allows the Vercel origin.
+2. Ensure the frontend's `VITE_API_BASE_URL` points to the API origin and the backend allows the frontend origin.
 
 Enquiries are persisted and the full form details are included in the notification email. Email provider credentials must be configured on the backend, never in frontend `VITE_` variables.
 
@@ -232,7 +232,7 @@ Do not add externally sourced images, video, fonts, or models without checking t
 
 ## Production and deployment
 
-Create two separate Vercel projects. For the frontend, set the project root to `scarface-frontend`, build with `npm run build`, and use `dist` as the output directory. For the backend, set the project root to `backend`, framework preset to Other, and build command to `npm run build`; leave the output directory and start command unset. Set frontend `VITE_API_BASE_URL` to the backend's public origin. The frontend and backend are independent Vercel projects, not a multi-service project. See [`backend/README.md`](./backend/README.md) for the backend environment, Neon, storage, email, OAuth, and migration requirements.
+Deploy the frontend to Vercel with the project root `scarface-frontend`, build command `npm run build`, and output directory `dist`. Deploy the backend as a Render Web Service rooted at `backend`, with build command `npm ci && npm run build` and start command `npm start`. Set frontend `VITE_API_BASE_URL` to the Render backend's public origin. See [`backend/README.md`](./backend/README.md) for backend environment, Neon, email, OAuth, and migration requirements.
 
 ## Content and release checklist
 

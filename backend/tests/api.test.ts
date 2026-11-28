@@ -38,15 +38,6 @@ function createServices(): AppServices {
       listPublished: vi.fn().mockResolvedValue({ items: [], pagination: { page: 1, pageSize: 25, total: 0 } }),
       getPublishedBySlug: vi.fn().mockResolvedValue({ slug: "home", sections: [] }),
     },
-    media: {
-      getPublicAsset: vi.fn().mockResolvedValue({
-        id: "c6204c65-eec4-4fd8-9dd4-2feb8fb44885",
-        storageKey: "public/sample.png",
-        mimeType: "image/png",
-        originalName: "sample.png",
-        data: Buffer.from("image"),
-      }),
-    },
   };
 }
 
@@ -110,6 +101,30 @@ describe("public API", () => {
 
     expect(response.status).toBe(200);
     expect(services.products.listPublished).toHaveBeenCalledWith("Tall charger", 2, 10);
+  });
+
+  it("accepts a job application without a resume upload", async () => {
+    const application = {
+      jobId: "7b0be5ca-43d6-4d4d-b833-ec9b2b2178e4",
+      applicantName: "Example Applicant",
+      email: "APPLICANT@EXAMPLE.COM",
+      phone: "+1 555 555 0100",
+      coverLetter: "I am interested in this role.",
+    };
+
+    const response = await request(app()).post("/api/v1/jobs/applications").send(application);
+
+    expect(response.status).toBe(201);
+    expect(services.applications.create).toHaveBeenCalledWith({
+      ...application,
+      email: "applicant@example.com",
+    });
+  });
+
+  it("does not expose the removed media endpoint", async () => {
+    const response = await request(app()).get("/api/v1/media/c6204c65-eec4-4fd8-9dd4-2feb8fb44885");
+
+    expect(response.status).toBe(404);
   });
 
   it("rejects invalid installation requests before persistence", async () => {

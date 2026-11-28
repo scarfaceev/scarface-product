@@ -1,6 +1,5 @@
 import type { ErrorRequestHandler } from "express";
 import { Prisma } from "@prisma/client";
-import { MulterError } from "multer";
 import { ZodError } from "zod";
 import { logger } from "../config/logger.js";
 import { AppError } from "../utils/app-error.js";
@@ -14,12 +13,6 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, req, res, _nex
         fields: error.issues.map((issue) => ({ path: issue.path.join("."), message: issue.message })),
       },
     });
-    return;
-  }
-
-  if (error instanceof MulterError) {
-    const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 400;
-    res.status(status).json({ error: { code: error.code, message: "The uploaded file was rejected." } });
     return;
   }
 

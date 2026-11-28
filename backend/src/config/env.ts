@@ -64,17 +64,7 @@ const schema = z.object({
   SEND_CUSTOMER_ACK: booleanFromEnv.default(false),
   EMAIL_POLL_INTERVAL_MS: z.coerce.number().int().min(1_000).max(300_000).default(5_000),
   EMAIL_MAX_RETRIES: z.coerce.number().int().min(1).max(20).default(5),
-  STORAGE_PROVIDER: z.enum(["local", "s3"]).default("local"),
-  STORAGE_LOCAL_DIR: z.string().min(1).default("./uploads"),
-  STORAGE_BUCKET: z.string().optional().default(""),
-  STORAGE_ACCESS_KEY: z.string().optional().default(""),
-  STORAGE_SECRET_KEY: z.string().optional().default(""),
-  STORAGE_REGION: z.string().optional().default(""),
-  STORAGE_ENDPOINT: z.string().optional().default(""),
-  STORAGE_FORCE_PATH_STYLE: booleanFromEnv.default(false),
   MAX_JSON_BODY: z.string().min(1).default("256kb"),
-  MAX_RESUME_SIZE_BYTES: z.coerce.number().int().min(1_024).max(25_000_000).default(5_242_880),
-  MAX_MEDIA_SIZE_BYTES: z.coerce.number().int().min(1_024).max(50_000_000).default(10_485_760),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1_000).default(900_000),
   RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(30),
 }).superRefine((value, context) => {
@@ -97,17 +87,10 @@ const schema = z.object({
     if (!isHttpsUrl(value.BACKEND_URL)) {
       context.addIssue({ code: "custom", path: ["BACKEND_URL"], message: "Use HTTPS for the production backend origin." });
     }
-    if (value.STORAGE_PROVIDER !== "s3") {
-      context.addIssue({ code: "custom", path: ["STORAGE_PROVIDER"], message: "Use durable S3-compatible storage in production." });
-    }
   }
   if (value.EMAIL_PROVIDER === "resend") {
     if (!value.EMAIL_API_KEY) context.addIssue({ code: "custom", path: ["EMAIL_API_KEY"], message: "Required when EMAIL_PROVIDER=resend." });
     if (!value.EMAIL_FROM) context.addIssue({ code: "custom", path: ["EMAIL_FROM"], message: "Required when EMAIL_PROVIDER=resend." });
-  }
-  if (value.STORAGE_PROVIDER === "s3") {
-    if (!value.STORAGE_BUCKET) context.addIssue({ code: "custom", path: ["STORAGE_BUCKET"], message: "Required when STORAGE_PROVIDER=s3." });
-    if (!value.STORAGE_REGION) context.addIssue({ code: "custom", path: ["STORAGE_REGION"], message: "Required when STORAGE_PROVIDER=s3." });
   }
 });
 

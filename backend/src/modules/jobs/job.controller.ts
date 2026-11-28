@@ -1,5 +1,4 @@
 import type { RequestHandler } from "express";
-import { AppError } from "../../utils/app-error.js";
 import { jobApplicationSchema, jobIdSchema, jobListQuerySchema } from "./job.schemas.js";
 import type { JobApplicationService, JobService } from "./job.service.js";
 
@@ -20,11 +19,7 @@ export function createJobController(
 
   const apply: RequestHandler = async (req, res) => {
     const input = jobApplicationSchema.parse(req.body);
-    if (!req.file) throw new AppError(400, "RESUME_REQUIRED", "Please attach a PDF resume.");
-    const application = await applications.create(input, {
-      originalName: req.file.originalname,
-      buffer: req.file.buffer,
-    });
+    const application = await applications.create(input);
     res.status(201).json({ data: { id: application.id, status: application.status, submittedAt: application.submittedAt } });
   };
 

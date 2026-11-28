@@ -8,7 +8,6 @@ export class ProductRepository {
     return Promise.all([
       this.prisma.product.findMany({
         where,
-        include: { media: { include: { mediaAsset: true }, orderBy: { position: "asc" } }, datasheetMedia: true },
         orderBy: [{ publishedAt: "desc" }, { name: "asc" }],
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -20,7 +19,6 @@ export class ProductRepository {
   getPublishedById(id: string) {
     return this.prisma.product.findFirst({
       where: { id, status: "PUBLISHED" },
-      include: { media: { include: { mediaAsset: true }, orderBy: { position: "asc" } }, datasheetMedia: true },
     });
   }
 
