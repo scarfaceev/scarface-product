@@ -14,6 +14,10 @@ export const passwordSchema = z.string()
 const registrationPassword = passwordSchema.regex(/[^A-Za-z0-9]/, "Password must include a special character.");
 const registrationPhone = z.string().trim().min(7).max(32).regex(/^\+?[0-9][0-9\s().-]*$/);
 
+export const completeProfileSchema = z.object({
+  phone: registrationPhone,
+}).strict();
+
 export const registerSchema = z.object({
   fullName: registrationName,
   email: registrationEmail,

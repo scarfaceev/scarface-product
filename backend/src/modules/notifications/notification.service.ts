@@ -36,13 +36,14 @@ export class NotificationService {
     relation: { enquiryId?: string; installationRequestId?: string; jobApplicationId?: string },
     entityId: string,
   ): Promise<void> {
-    if (!env.COMPANY_NOTIFICATION_EMAIL) {
-      logger.warn({ notificationType: type }, "Company notification skipped: COMPANY_NOTIFICATION_EMAIL is not configured");
+    const recipient = type === "ENQUIRY_ADMIN" ? env.ENQUIRY_RECEIVER_EMAIL : env.COMPANY_NOTIFICATION_EMAIL;
+    if (!recipient) {
+      logger.warn({ notificationType: type }, "Company notification skipped: no recipient is configured");
       return;
     }
     await enqueueNotification(transaction, {
       type,
-      recipient: env.COMPANY_NOTIFICATION_EMAIL,
+      recipient,
       dedupeKey: `${type}:${entityId}:company`,
       ...relation,
     });
@@ -140,7 +141,13 @@ export class NotificationWorker {
     try {
       const { renderNotification } = await import("./templates.js");
       const message = renderNotification(notification);
-      const providerReference = await this.provider.send({ to: notification.recipient, ...message });
+      const providerReference = await this.provider.send({
+        to: notification.recipient,
+        subject: message.subject,
+        text: message.text,
+        html: message.html,
+        ...(message.replyTo ? { replyTo: message.replyTo } : {}),
+      });
       await this.prisma.notificationOutbox.update({
         where: { id: notification.id },
         data: { status: "SENT", sentAt: new Date(), providerReference, lockedAt: null, lastError: null },

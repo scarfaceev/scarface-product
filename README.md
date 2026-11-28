@@ -28,7 +28,7 @@ The site presents ScarfaceEV's chargers and related information in one continuou
 - Motion effects, responsive styling, keyboard-accessible controls, and reduced-motion handling in animated areas.
 - An enquiry prompt, back-to-top control, and a cookie-preference notice. The notice only stores a local preference; no analytics or advertising tracking is configured.
 
-The main charger-photo viewer is image-based: it rotates through supplied product images and supports manual selection, zoom, pointer dragging, and keyboard arrows. It is not a 3D model viewer. A separate `ChargerCanvas.jsx` component contains a conceptual React Three Fiber charger visual and is available for future use.
+The main charger-photo viewer is image-based: it rotates through supplied product images and supports manual selection, zoom, pointer dragging, and keyboard arrows. It is not a 3D model viewer.
 
 ## Architecture
 
@@ -47,13 +47,12 @@ There is no client-side router because the current website is a single page. Nav
 - **`components/Header.jsx`** — desktop mega menus, mobile menu/submenus, scroll state, Escape-key behavior, and active-section highlighting.
 - **`components/Hero.jsx`** — hero content, image/video selection, and motion/reduced-motion behavior.
 - **`components/Sections.jsx`** — reusable sections for products, specifications, comparison, datasheet, features, app showcase, installation, gallery, about, FAQ, CTA, contact, and sustainability.
-- **`components/Product3DViewer.jsx`** — lazy-loaded product photo carousel, model/view controls, automatic rotation, pause/resume, zoom, drag, and keyboard navigation.
-- **`components/ContactForm.jsx`** — input validation and optional JSON POST to the configured enquiry endpoint.
+- **`components/Product3DViewer.jsx`** — lazy-loaded product photo carousel, photo-view controls, automatic rotation, pause/resume, zoom, drag, and keyboard navigation.
+- **`components/ContactForm.jsx`** — input validation and JSON submission to the configured backend API.
 - **`components/Overlays.jsx`** — enquiry modal, back-to-top button, and local cookie-preference notice.
 - **`components/Img.jsx` and `components/Icon.jsx`** — shared image/illustration and icon rendering helpers.
 - **`components/Reveal.jsx`** — shared scroll reveal animation wrapper.
 - **`components/Logo.jsx` and `components/Footer.jsx`** — reusable brand and footer UI.
-- **`components/ChargerCanvas.jsx`** — a separate conceptual 3D charger visual; it is not the homepage photo carousel.
 
 ### Content and asset flow
 
@@ -93,7 +92,7 @@ scarfaceev-website/
     ├── vite.config.js
     ├── README.md
     ├── public/
-    │   └── favicon.png
+    │   └── login-overlay.png
     └── src/
         ├── App.jsx
         ├── main.jsx
@@ -106,10 +105,8 @@ scarfaceev-website/
         │   │           ├── 1.png ... 9.png
         │   ├── logo/
         │   │   └── logo-removebg-preview.png
-        │   ├── models/                   # optional 3D models
         │   └── videos/                   # optional hero videos
         ├── components/
-        │   ├── ChargerCanvas.jsx
         │   ├── ContactForm.jsx
         │   ├── Footer.jsx
         │   ├── Header.jsx
@@ -146,7 +143,6 @@ The backend is a separate API service with its own `README.md`, `package.json`, 
 | Development server/build | Vite 5, `@vitejs/plugin-react` |
 | Motion | Framer Motion |
 | Icons | Lucide React |
-| 3D visual support | Three.js, React Three Fiber, Drei |
 | Styling | Project CSS in `src/styles/globals.css` |
 
 Dependency versions and scripts are defined by [`scarface-frontend/package.json`](./scarface-frontend/package.json); the lockfile is [`scarface-frontend/package-lock.json`](./scarface-frontend/package-lock.json).
@@ -191,19 +187,18 @@ Configure `DATABASE_URL` in `backend/.env` for your PostgreSQL database before r
 
 The public API is mounted at `/api/v1`: it supports health checks, enquiries, published products, installation requests, published jobs and applications, published CMS pages, and public media retrieval. Authentication is available at `/api/auth` and `/api/v1/auth`, including registration, login, session lookup/logout, password reset, and OAuth provider callbacks. Admin APIs are not implemented. In development, Swagger UI and the OpenAPI document are available at `/api/docs` and `/api/openapi.json`. The full endpoint list and behavior are in [`backend/README.md`](./backend/README.md).
 
-The frontend's [`.env.example`](./scarface-frontend/.env.example) sets `VITE_ENQUIRY_ENDPOINT=/api/v1/enquiries`. In development, [vite.config.js](./scarface-frontend/vite.config.js) proxies `/api` to `http://localhost:3001`. Start PostgreSQL and the backend before testing form submissions. In production, route `/api` to the backend or configure the frontend endpoint to the API's public URL. When the auth API uses a separate public host, set `VITE_API_BASE_URL` to that origin and set backend `BACKEND_URL` to the same origin so OAuth callbacks and session cookies share a host.
+The enquiry form and account pages use the same API URL helper. In development, [vite.config.js](./scarface-frontend/vite.config.js) proxies `/api` to `http://localhost:3001`. For a separate production API host, set frontend `VITE_API_BASE_URL` to its public origin; the backend must allow the frontend origin through `FRONTEND_URL`/`CORS_ORIGINS`. If migrating from `VITE_ENQUIRY_ENDPOINT`, use `VITE_API_BASE_URL` for the API origin instead; leave it empty for the local Vite proxy. Enquiry mail is sent to backend-only `ENQUIRY_RECEIVER_EMAIL` through the configured Resend provider.
 
 ## Configuration and integrations
 
 ### Enquiry endpoint
 
-The form reads `VITE_ENQUIRY_ENDPOINT`. To enable sending:
+The form posts to the included backend by default. To enable email delivery:
 
-1. From `scarface-frontend/`, copy `.env.example` to `.env`.
-2. Set `VITE_ENQUIRY_ENDPOINT` to the URL of an API that accepts a JSON `POST` request.
-3. Restart the Vite development server after changing the environment file.
+1. Configure the backend's `EMAIL_PROVIDER=resend`, `EMAIL_API_KEY`, `EMAIL_FROM`, and `ENQUIRY_RECEIVER_EMAIL`.
+2. Ensure the frontend's `VITE_API_BASE_URL` points to the API origin and the backend allows the Vercel origin.
 
-Without this value, the form validates the fields and tells the visitor that no enquiry was sent. To send submissions to the backend included in this repository, use the endpoint shown in the frontend `.env.example` and start the backend.
+Enquiries are persisted and the full form details are included in the notification email. Email provider credentials must be configured on the backend, never in frontend `VITE_` variables.
 
 Vite embeds variables prefixed with `VITE_` into client-side code. Do not put credentials, private API keys, or other secrets in these variables. Configure any privileged credentials on the server that receives the request.
 
@@ -213,7 +208,7 @@ Vite embeds variables prefixed with `VITE_` into client-side code. Do not put cr
 |---|---|
 | Brand name, tagline, hero copy, CTAs, contact details, social links | `src/data/brandData.js` |
 | Desktop/mobile navigation labels, descriptions, links, section IDs | `src/data/navigationData.js` |
-| Product descriptions, specifications, datasheet URL, model setting | `src/data/productData.js` |
+| Product descriptions, specifications, datasheet URL | `src/data/productData.js` |
 | Image keys, charger views, gallery image mapping | `src/data/imageAssets.js` |
 | Hero video/poster settings | `src/data/videoAssets.js` |
 | Features, benefits, installation steps | `src/data/featuresData.js` |
@@ -227,19 +222,19 @@ Vite embeds variables prefixed with `VITE_` into client-side code. Do not put cr
 ## Assets and media
 
 - **Charger images:** Original extracted images used by the app are in `src/assets/images/charger-photos/SCARFACEEV Tall Charger Front (1)/`. The ZIP backup remains at the repository root.
-- **Logo and favicon:** The logo is in `src/assets/logo/`; the favicon is `public/favicon.png`.
+- **Logo and favicon:** The logo in `src/assets/logo/` is also used as the favicon.
 - **Hero image:** The current hero uses the existing illustrated asset. Add/import a replacement through `imageAssets.js` and keep any mobile crop mapping there.
 - **Hero video:** Place authorized media in `src/assets/videos/`, import it in `videoAssets.js`, and configure a poster where appropriate. The current video fields are unset. Existing behavior skips video for mobile/reduced-motion users and avoids autoplay for Data Saver.
-- **3D model:** `ChargerCanvas.jsx` supports a conceptual procedural charger and can load a GLB through its `modelUrl` prop. A model must be properly licensed and optimized. The homepage's current product viewer remains the image-based viewer.
+- **3D model:** No 3D model viewer is currently included; the homepage's product viewer is image-based.
 - **Attribution:** Record media sources and licence checks in [`scarface-frontend/ATTRIBUTION.md`](./scarface-frontend/ATTRIBUTION.md).
 
 Do not add externally sourced images, video, fonts, or models without checking the individual asset licence and documenting the source where required.
 
 ## Production and deployment
 
-Run `npm run build` from `scarface-frontend/`; Vite writes deployable files to `scarface-frontend/dist/`. The Vite configuration uses `base: "./"` so generated asset URLs are relative and can work when hosted under a subdirectory. Deploy the contents of that `dist/` directory to a static host.
+For Vercel, set the project root to `scarface-frontend`, install with `npm ci`, build with `npm run build`, and use `dist` as the output directory. Set `VITE_API_BASE_URL` to the public Render backend origin. The Vite configuration uses `base: "./"` and builds the homepage plus the explicit account pages as static HTML.
 
-The frontend is a client-rendered single page deployed as static files. Deploy the backend separately and route `/api` to it, or configure `VITE_ENQUIRY_ENDPOINT` with the deployed API URL. See [`backend/README.md`](./backend/README.md) for backend deployment and configuration details.
+For Render, set the service root to `backend`, build with `npm ci && npm run prisma:generate && npm run build`, and start with `npm start`. Configure the production environment and database before deploying; apply checked-in migrations with `npm run db:deploy` as a deliberate pre-deploy step. Set the Render health check to `/api/v1/health`. See [`backend/README.md`](./backend/README.md) for required settings, storage, email, and OAuth setup.
 
 ## Content and release checklist
 

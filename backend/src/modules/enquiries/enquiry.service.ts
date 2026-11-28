@@ -3,6 +3,7 @@ import { env } from "../../config/env.js";
 import { NotificationService } from "../notifications/notification.service.js";
 import { EnquiryRepository } from "./enquiry.repository.js";
 import type { CreateEnquiryInput } from "./enquiry.schema.js";
+import { AppError } from "../../utils/app-error.js";
 
 export class EnquiryService {
   private readonly repository: EnquiryRepository;
@@ -12,6 +13,10 @@ export class EnquiryService {
   }
 
   async create(input: CreateEnquiryInput) {
+    if (env.EMAIL_PROVIDER === "disabled" || !env.ENQUIRY_RECEIVER_EMAIL) {
+      throw new AppError(503, "ENQUIRY_EMAIL_UNAVAILABLE", "Enquiry email is not configured.");
+    }
+
     return this.prisma.$transaction(async (transaction) => {
       const enquiry = await transaction.enquiry.create({
         data: {

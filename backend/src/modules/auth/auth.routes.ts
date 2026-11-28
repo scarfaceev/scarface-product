@@ -10,6 +10,7 @@ import { createEmailProvider } from "../notifications/email-provider.js";
 import { logger } from "../../config/logger.js";
 import { AppError } from "../../utils/app-error.js";
 import {
+  completeProfileSchema,
   loginSchema,
   passwordResetRequestSchema,
   passwordResetSchema,
@@ -124,10 +125,13 @@ function readOAuthTransaction(req: Request, provider: OAuthProvider): OAuthTrans
       typeof value.codeVerifier !== "string") return null;
     if (!/^[A-Za-z0-9_-]{43}$/.test(value.state) || !/^[A-Za-z0-9_-]{43,128}$/.test(value.codeVerifier)) return null;
     if ("nonce" in value && value.nonce !== undefined && typeof value.nonce !== "string") return null;
+    if ("linkToUserId" in value && (typeof value.linkToUserId !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.linkToUserId))) return null;
     return {
       state: value.state,
       codeVerifier: value.codeVerifier,
       ...("nonce" in value && typeof value.nonce === "string" ? { nonce: value.nonce } : {}),
+      ...("linkToUserId" in value && typeof value.linkToUserId === "string" ? { linkToUserId: value.linkToUserId } : {}),
     };
   } catch {
     return null;
@@ -143,9 +147,10 @@ function callbackParameters(req: Request): URL {
   return url;
 }
 
-function loginRedirect(error: string): string {
+function loginRedirect(error: string, linkProvider?: OAuthProvider): string {
   const url = new URL("/login.html", env.FRONTEND_URL);
   url.searchParams.set("oauthError", error);
+  if (linkProvider) url.searchParams.set("linkProvider", linkProvider);
   return url.toString();
 }
 
@@ -215,6 +220,18 @@ export function authRouter(): Router {
       throw new AppError(401, "INVALID_CREDENTIALS", "Email or password is incorrect.");
     }
     await createSession(req, res, user.id);
+    res.json({ data: safeUser(user) });
+  };
+
+  const completeProfile: RequestHandler = async (req, res) => {
+    requireTrustedOrigin(req);
+    const userId = await getSessionUserId(req);
+    if (!userId) throw new AppError(401, "UNAUTHORIZED", "Authentication is required.");
+    const input = completeProfileSchema.parse(req.body);
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: { phone: input.phone },
+    });
     res.json({ data: safeUser(user) });
   };
 
@@ -305,7 +322,7 @@ export function authRouter(): Router {
     res.json({ data: { passwordReset: true } });
   };
 
-  const beginOAuth: RequestHandler = async (req, res) => {
+  const startOAuth = async (req: Request, res: Response, linkToUserId?: string): Promise<void> => {
     requireTrustedOAuthInitiator(req);
     const parsedProvider = providerSchema.safeParse(req.params.provider);
     if (!parsedProvider.success) throw new AppError(404, "OAUTH_PROVIDER_NOT_FOUND", "This sign-in provider is not supported.");
@@ -314,6 +331,7 @@ export function authRouter(): Router {
       state: randomBytes(32).toString("base64url"),
       codeVerifier: randomBytes(32).toString("base64url"),
       ...(provider === "github" ? {} : { nonce: randomBytes(32).toString("base64url") }),
+      ...(linkToUserId ? { linkToUserId } : {}),
     };
     try {
       const authorizationUrl = await buildAuthorizationUrl(provider, transaction);
@@ -330,6 +348,15 @@ export function authRouter(): Router {
     }
   };
 
+  const beginOAuth: RequestHandler = async (req, res) => startOAuth(req, res);
+
+  const beginOAuthLink: RequestHandler = async (req, res) => {
+    requireTrustedOrigin(req);
+    const userId = await getSessionUserId(req);
+    if (!userId) throw new AppError(401, "UNAUTHORIZED", "Authentication is required.");
+    await startOAuth(req, res, userId);
+  };
+
   const finishOAuth: RequestHandler = async (req, res) => {
     const parsedProvider = providerSchema.safeParse(req.params.provider);
     if (!parsedProvider.success) throw new AppError(404, "OAUTH_PROVIDER_NOT_FOUND", "This sign-in provider is not supported.");
@@ -342,15 +369,35 @@ export function authRouter(): Router {
     }
 
     try {
+      if (transaction.linkToUserId && await getSessionUserId(req) !== transaction.linkToUserId) {
+        throw new AppError(401, "OAUTH_LINK_SESSION_EXPIRED", "Sign in again before linking this provider.");
+      }
       const callbackUrl = callbackParameters(req);
       const profile = await completeAuthorization(provider, callbackUrl, transaction, appleProfileName(req.body?.user));
-      const user = await resolveOAuthUser(provider, profile);
-      await createSession(req, res, user.id);
-      res.redirect(302, new URL("/", env.FRONTEND_URL).toString());
+      const user = await resolveOAuthUser(
+        provider,
+        profile,
+        transaction.linkToUserId ? { linkToUserId: transaction.linkToUserId } : {},
+      );
+      if (!transaction.linkToUserId) await createSession(req, res, user.id);
+      const destination = user.phone ? "/" : "/complete-profile.html";
+      res.redirect(302, new URL(destination, env.FRONTEND_URL).toString());
     } catch (error) {
       if (error instanceof AppError) {
         logger.warn({ provider, errorCode: error.code }, "OAuth sign-in was not completed.");
-        res.redirect(302, loginRedirect(error.code === "OAUTH_NOT_CONFIGURED" ? "not_configured" : "failed"));
+        const redirectError = error.code === "OAUTH_NOT_CONFIGURED"
+          ? "not_configured"
+          : error.code === "OAUTH_ACCOUNT_LINK_REQUIRED"
+            ? "account_link_required"
+            : error.code === "OAUTH_LINK_SESSION_EXPIRED"
+              ? "link_session_expired"
+              : error.code === "OAUTH_IDENTITY_ALREADY_LINKED"
+                ? "identity_already_linked"
+                : "failed";
+        const linkProvider = ["account_link_required", "link_session_expired", "identity_already_linked"].includes(redirectError)
+          ? provider
+          : undefined;
+        res.redirect(302, loginRedirect(redirectError, linkProvider));
         return;
       }
       const errorName = error instanceof Error ? error.name : "UnknownError";
@@ -363,8 +410,10 @@ export function authRouter(): Router {
   router.post("/login", credentialRateLimit, login);
   router.get("/me", me);
   router.post("/logout", credentialRateLimit, logout);
+  router.post("/profile/complete", credentialRateLimit, completeProfile);
   router.post("/password/forgot", resetRateLimit, requestPasswordReset);
   router.post("/password/reset", resetRateLimit, resetPassword);
+  router.post("/oauth/:provider/link", oauthStartRateLimit, beginOAuthLink);
   router.get("/oauth/:provider", oauthStartRateLimit, beginOAuth);
   router.post("/oauth/:provider", oauthStartRateLimit, beginOAuth);
   router.get("/oauth/:provider/callback", finishOAuth);

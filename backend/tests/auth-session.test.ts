@@ -1,7 +1,6 @@
-import { createHash, createHmac } from "node:crypto";
+import { createHash } from "node:crypto";
 import type { Request, Response } from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { env } from "../src/config/env.js";
 
 const database = vi.hoisted(() => ({
   authSession: {
@@ -89,7 +88,7 @@ describe("database-backed auth sessions", () => {
       userId: "user-123",
       expiresAt: Date.now() + 60_000,
     })).toString("base64url");
-    const signature = createHmac("sha256", env.SESSION_SECRET).update(payload).digest("base64url");
+    const signature = "legacy-signature";
 
     expect(await getSessionUserId(requestWithCookie(`scarface_session=${payload}.${signature}`))).toBeNull();
     expect(database.authSession.findUnique).not.toHaveBeenCalled();

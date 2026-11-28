@@ -18,7 +18,11 @@ function normalizedName(profile: OAuthProfile): string {
   return name && name.length >= 2 ? name : "Scarface EV user";
 }
 
-export async function resolveOAuthUser(provider: OAuthProvider, profile: OAuthProfile) {
+export async function resolveOAuthUser(
+  provider: OAuthProvider,
+  profile: OAuthProfile,
+  options: { linkToUserId?: string } = {},
+) {
   const providerValue = getProviderEnum(provider);
   const email = normalizedEmail(profile);
   const existingIdentity = await prisma.oAuthIdentity.findUnique({
@@ -26,6 +30,9 @@ export async function resolveOAuthUser(provider: OAuthProvider, profile: OAuthPr
     include: { user: true },
   });
   if (existingIdentity) {
+    if (options.linkToUserId && existingIdentity.userId !== options.linkToUserId) {
+      throw new AppError(409, "OAUTH_IDENTITY_ALREADY_LINKED", "This provider account is already linked to another user.");
+    }
     await prisma.oAuthIdentity.update({
       where: { id: existingIdentity.id },
       data: {
@@ -40,9 +47,15 @@ export async function resolveOAuthUser(provider: OAuthProvider, profile: OAuthPr
 
   try {
     return await prisma.$transaction(async (transaction) => {
-      let user = email ? await transaction.user.findUnique({ where: { email } }) : null;
-      if (user && !user.emailVerifiedAt) {
-        user = await transaction.user.update({ where: { id: user.id }, data: { emailVerifiedAt: new Date() } });
+      let user;
+      if (options.linkToUserId) {
+        user = await transaction.user.findUnique({ where: { id: options.linkToUserId } });
+        if (!user) throw new AppError(401, "UNAUTHORIZED", "Authentication is required.");
+      } else {
+        user = email ? await transaction.user.findUnique({ where: { email } }) : null;
+        if (user) {
+          throw new AppError(409, "OAUTH_ACCOUNT_LINK_REQUIRED", "Sign in to your existing account before linking this provider.");
+        }
       }
       if (!user) {
         user = await transaction.user.create({
@@ -75,7 +88,12 @@ export async function resolveOAuthUser(provider: OAuthProvider, profile: OAuthPr
       where: { provider_providerAccountId: { provider: providerValue, providerAccountId: profile.subject } },
       include: { user: true },
     });
-    if (identity) return identity.user;
+    if (identity) {
+      if (options.linkToUserId && identity.userId !== options.linkToUserId) {
+        throw new AppError(409, "OAUTH_IDENTITY_ALREADY_LINKED", "This provider account is already linked to another user.");
+      }
+      return identity.user;
+    }
     throw new AppError(409, "OAUTH_ACCOUNT_CONFLICT", "This identity could not be linked safely. Please try again.");
   }
 }
