@@ -3,6 +3,5 @@ export const products = [{
   desc: "A premium DC charger designed for simple, dependable everyday charging.",
   points: ["Advanced EV Technology", "High-Power Charging", "Complete EV Solutions"],
   cta: ["Enquire about this charger", "#contact"], img: "product",
-  model3d: null,   // e.g. new URL("../assets/models/charger.glb", import.meta.url).href  (GLB/GLTF)
   datasheet: null, // e.g. "./datasheet.pdf" placed in /public – the section is hidden until set
 }];

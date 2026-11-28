@@ -11,15 +11,17 @@ npm run build
 npm run preview
 ```
 
-Requires Node 18+. The production build is written to `dist/` within this folder. Vite uses relative asset paths so the build can be hosted from a subdirectory.
+Requires Node 20+ (the backend requires Node 20+). The production build is written to `dist/` within this folder. Vite uses relative asset paths so the build can be hosted from a subdirectory.
 
-The backend runs separately from [../backend/](../backend/). The form posts to `/api/v1/enquiries` by default; Vite proxies `/api` to `http://localhost:3001` during development. Production hosting must proxy `/api` to the backend or set `VITE_ENQUIRY_ENDPOINT` to the deployed API URL.
+The backend runs separately from [../backend/](../backend/). All frontend API requests use `VITE_API_BASE_URL`, which defaults to the same-origin `/api` path. Vite proxies `/api` to `http://localhost:3001` during development. For Vercel, set `VITE_API_BASE_URL` to the public Render backend origin and allow the Vercel origin in backend CORS settings.
+
+For Vercel, configure the project root as `scarface-frontend`, build command as `npm run build`, and output directory as `dist`. The project builds multiple explicit HTML pages, so no SPA fallback rewrite is needed.
 
 ## Where to change things
 
 | What | File |
 |---|---|
-| Logo | `src/assets/logo/logo-removebg-preview.png`; favicon: `public/favicon.png` |
+| Logo and favicon | `src/assets/logo/logo-removebg-preview.png` |
 | Hero text, CTAs, contact details, social links, tagline | `src/data/brandData.js` |
 | Navigation + mega menus | `src/data/navigationData.js` |
 | Site images and gallery configuration | `src/data/imageAssets.js` |
@@ -32,11 +34,11 @@ The backend runs separately from [../backend/](../backend/). The form posts to `
 
 ## Enquiry form
 
-The form submits the name, email, phone, interest, and message to the API. Configure the backend email provider and `COMPANY_NOTIFICATION_EMAIL=hasith@scarfaceev.com` in `backend/.env` to deliver the enquiry email; see [../backend/README.md](../backend/README.md). Backend credentials must never be placed in `VITE_` variables because they are exposed in frontend builds.
+The form submits the name, email, phone, interest, and message to the API. Configure the backend email provider, `EMAIL_FROM`, and `ENQUIRY_RECEIVER_EMAIL` in the backend environment to deliver the enquiry email; see [../backend/README.md](../backend/README.md). Backend credentials must never be placed in `VITE_` variables because they are exposed in frontend builds.
 
-## 3D product viewer
+## Product photo viewer
 
-`src/components/Product3DViewer.jsx` rotates through the supplied front, angled, and rear DC charger photos; it supports dragging, angle selection, and zoom. This is a photo-based turntable, not a true 3D model. For a real interactive 3D model, put a GLB in `src/assets/models/` and configure `model3d` in `src/data/productData.js`; the separate `src/components/ChargerCanvas.jsx` currently renders a procedural concept when no GLB is supplied.
+`src/components/Product3DViewer.jsx` rotates through the supplied front, angled, and rear DC charger photos; it supports dragging, angle selection, and zoom. This is a photo-based turntable, not a true 3D model.
 
 ## Hero photo and video
 

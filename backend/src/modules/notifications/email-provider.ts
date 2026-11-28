@@ -5,6 +5,7 @@ export interface EmailMessage {
   subject: string;
   text: string;
   html: string;
+  replyTo?: string;
 }
 
 export interface EmailProvider {
@@ -19,7 +20,14 @@ export class ResendEmailProvider implements EmailProvider {
         Authorization: `Bearer ${env.EMAIL_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from: env.EMAIL_FROM, to: [message.to], subject: message.subject, text: message.text, html: message.html }),
+      body: JSON.stringify({
+        from: env.EMAIL_FROM,
+        to: [message.to],
+        subject: message.subject,
+        text: message.text,
+        html: message.html,
+        ...(message.replyTo ? { reply_to: message.replyTo } : {}),
+      }),
       signal: AbortSignal.timeout(10_000),
     });
 

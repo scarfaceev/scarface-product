@@ -90,6 +90,21 @@ describe("public API", () => {
     expect(services.enquiries.create).not.toHaveBeenCalled();
   });
 
+  it("rejects email header line breaks in enquiries", async () => {
+    const response = await request(app())
+      .post("/api/v1/enquiries")
+      .send({
+        name: "Example Customer",
+        email: "customer@example.com\r\nBcc: attacker@example.com",
+        interest: "Home charger",
+        message: "I would like to discuss a home charger.",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe("VALIDATION_ERROR");
+    expect(services.enquiries.create).not.toHaveBeenCalled();
+  });
+
   it("returns paginated published products", async () => {
     const response = await request(app()).get("/api/v1/products?page=2&pageSize=10&category=Tall%20charger");
 

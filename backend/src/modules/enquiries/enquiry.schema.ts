@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 const name = z.string().trim().min(1).max(120);
-const email = z.string().trim().email().max(254).transform((value) => value.toLowerCase());
+const email = z.string().trim().email().max(254).refine((value) => !/[\r\n]/.test(value), "Email must not contain line breaks.")
+  .transform((value) => value.toLowerCase());
 const phone = z.preprocess(
   (value) => typeof value === "string" && value.trim() === "" ? undefined : value,
   z.string().trim().min(7).max(32).regex(/^\+?[0-9][0-9\s().-]*$/).optional(),

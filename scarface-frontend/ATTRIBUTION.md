@@ -8,7 +8,6 @@
 | hero poster / images.hero | _pending_ | | | | | |
 | landscape (sustainability) | _pending_ | | | | | |
 | gallery g1–g6 | _pending_ | | | | | |
-| 3D model (productData.js model3d) | _pending_ | | | | | |
 
 Candidate sources to search (verify each licence individually): pexels.com, pixabay.com, unsplash.com. Suggested searches: "electric car charging", "home EV charger wall", "EV charging connector close up", "aerial mountain valley", "Himalaya road", "Loktak lake". Do not use YouTube downloads, and avoid footage where another company's charger or logo is prominent.
 
