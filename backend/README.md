@@ -8,7 +8,6 @@ Separate TypeScript/Express REST API for the ScarfaceEV React/Vite website. It u
 - npm
 - PostgreSQL 14+ for migrations and persistence
 - Resend credentials for outbound email (optional in local development)
-- S3-compatible credentials only when `STORAGE_PROVIDER=s3`
 
 Email/password authentication, provider sign-in, persistent sessions, and password reset are available through the auth endpoints below. There is no admin UI or admin API; administrative domain service methods remain internal and are not exposed as HTTP routes.
 
@@ -61,10 +60,9 @@ Swagger UI is available at `/api/docs` and the OpenAPI document at `/api/openapi
 | `POST` | `/api/v1/installation-requests` | Submit a structured installation/site-assessment request. |
 | `GET` | `/api/v1/jobs` | Paginated published job openings. |
 | `GET` | `/api/v1/jobs/:id` | Published job by UUID. |
-| `POST` | `/api/v1/jobs/applications` | Multipart application with a private PDF resume. |
+| `POST` | `/api/v1/jobs/applications` | Submit a text-based job application as JSON. |
 | `GET` | `/api/v1/content/pages` | Paginated published CMS pages. |
 | `GET` | `/api/v1/content/pages/:slug` | Published page with ordered content sections. |
-| `GET` | `/api/v1/media/:id` | Retrieve public media only; private resumes return 404. |
 | `POST` | `/api/auth/register` | Register with email/password and start a persistent session. |
 | `POST` | `/api/auth/login` | Authenticate with email/password. |
 | `GET` | `/api/auth/me` | Return the current authenticated profile. |
@@ -87,56 +85,53 @@ Password-reset email requires `EMAIL_PROVIDER=resend` and the existing Resend se
 See [.env.example](./.env.example). Important values:
 
 - `DATABASE_URL`: PostgreSQL connection string.
-- `NODE_ENV=production`, `DATABASE_URL`, `FRONTEND_URL`, `BACKEND_URL`, `CORS_ORIGINS`, `TRUST_PROXY_HOPS`: production runtime, database, browser origin, and reverse-proxy settings. Production rejects localhost URLs and local file storage.
+- `NODE_ENV=production`, `DATABASE_URL`, `FRONTEND_URL`, `BACKEND_URL`, `CORS_ORIGINS`, `TRUST_PROXY_HOPS`: production runtime, database, browser origin, and reverse-proxy settings. Production rejects localhost URLs.
 - `CRON_SECRET`: at least 32 random characters in production; protects the scheduled notification retry endpoint.
 - `BACKEND_URL`: externally reachable API base URL used when constructing OAuth callback URIs.
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_TENANT_ID`, `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`: optional provider credentials; configure only on the backend.
 - `EMAIL_PROVIDER=disabled|resend`: defaults to disabled. To accept emailed website enquiries, set `EMAIL_PROVIDER=resend`, `EMAIL_API_KEY`, `EMAIL_FROM` (a verified sender), and `ENQUIRY_RECEIVER_EMAIL` (the company recipient). The receiver is backend-only and has no default. `COMPANY_NOTIFICATION_EMAIL` is an optional recipient for other company notifications.
 - `SEND_CUSTOMER_ACK`: optional customer acknowledgement; false by default.
-- `STORAGE_PROVIDER=local|s3`: local storage is for development; configure private S3-compatible storage for production.
-- `MAX_RESUME_SIZE_BYTES`, `MAX_MEDIA_SIZE_BYTES`, `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`: bounded upload and rate-limit settings.
+- `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`: public form and API rate-limit settings.
 
 Do not commit `.env`. Never put backend secrets in `VITE_` variables. Enquiry submission returns a configuration error while email is disabled or the receiver is missing. Once Resend is configured, the enquiry and its notification are committed together to the database outbox; the worker retries delivery failures. The email includes the name, email, optional phone, interest, message, and submission time, and sets the customer's email as Reply-To. The frontend submits to `/api/v1/enquiries` by default. Local tests use a mocked email provider and do not send real messages.
 
-To test locally, copy `.env.example` to `.env`, configure a reachable PostgreSQL database and the Resend settings above, then start the backend with `npm run dev`. Start the frontend separately; its Vite `/api` proxy targets the local backend. Submit the form and verify receipt at `ENQUIRY_RECEIVER_EMAIL`. For production, store the Resend API key and receiver in Vercel environment settings, use a verified sender/domain, and ensure the backend function can reach Resend and PostgreSQL. Do not configure email credentials in frontend environment variables.
+To test locally, copy `.env.example` to `.env`, configure a reachable PostgreSQL database and the Resend settings above, then start the backend with `npm run dev`. Start the frontend separately; its Vite `/api` proxy targets the local backend. Submit the form and verify receipt at `ENQUIRY_RECEIVER_EMAIL`. For production, store the Resend API key and receiver in Render environment settings, use a verified sender/domain, and ensure the backend can reach Resend and PostgreSQL. Do not configure email credentials in frontend environment variables.
 
 ## Data and modules
 
 - `Enquiry`: normalized contact details, interest, message, lifecycle status, timestamps.
-- `Product` / `ProductMedia`: published product content and optional ordered media. The initial seed is sourced from the current frontend placeholders.
+- `Product`: published product content. The initial seed is sourced from the current frontend placeholders.
 - `InstallationRequest`: customer, installation/property type, address, requirements, and request status.
-- `Job` / `JobApplication`: published openings and applicant records. Resumes are stored privately as media metadata plus a storage key.
+- `Job` / `JobApplication`: published openings and text-based applicant records.
 - `ContentPage` / `ContentSection`: draft/published structured pages and SEO fields.
-- `MediaAsset`: file metadata, visibility, MIME type, checksum, and storage key; file bytes are stored through a storage adapter.
 - `NotificationOutbox`: deduplicated email notification jobs with retry state and provider reference.
 
-Public API routes only retrieve published products/jobs/pages. No fake product attributes, open positions, or CMS pages are seeded. Media is validated by file signature as well as size; generic media upload is internal until an authenticated administration interface is available.
+Public API routes only retrieve published products/jobs/pages. No fake product attributes, open positions, or CMS pages are seeded. The backend does not accept or serve uploaded files; the website's visual assets remain frontend static assets.
 
-## Email and storage behavior
+## Email delivery and file handling
 
-The email worker uses a configurable provider abstraction. The included Resend adapter is activated only when explicitly configured. On Vercel, successful enquiry/installation/application requests schedule one outbox attempt after the HTTP response with `waitUntil`; a protected cron endpoint drains queued retries. It retries failed deliveries with bounded exponential delay and marks exhausted notifications failed; successfully queued enquiries remain persisted if a later delivery attempt fails.
+The email worker uses a configurable provider abstraction. The included Resend adapter is activated only when explicitly configured. The long-running backend process starts the worker alongside the HTTP server; on the optional Vercel function adapter, successful enquiry/installation/application requests schedule one outbox attempt after the HTTP response with `waitUntil`, and a protected cron endpoint drains queued retries. It retries failed deliveries with bounded exponential delay and marks exhausted notifications failed; successfully queued enquiries remain persisted if a later delivery attempt fails.
 
-The storage adapter supports local development storage and private S3-compatible storage. The only public upload route is the careers application route, and it accepts PDF resumes only. Resume downloads are not exposed publicly. Product/CMS media write operations remain internal until protected admin routes are added.
+Job applications accept the existing text fields as JSON and do not require or accept a resume upload. Website images, videos, logos, and other visual assets are served from the frontend's static asset directories.
 
 ## Testing
 
-`npm test` runs isolated API tests that inject service adapters; tests do not send real email or upload real customer documents. Database migration/transaction tests require a separately provisioned PostgreSQL test database. Set `DATABASE_URL` to that database before running migrations or integration checks. Do not point tests at production data.
+`npm test` runs isolated API tests that inject service adapters; tests do not send real email. Database migration/transaction tests require a separately provisioned PostgreSQL test database. Set `DATABASE_URL` to that database before running migrations or integration checks. Do not point tests at production data.
 
-## Vercel deployment
+## Render deployment
 
-Deploy the backend as a **separate Vercel project** from the frontend. Set the project root to `backend`, framework preset to Other, build command to `npm run build`, and leave the output directory and start command unset. Vercel serves `/api/*` through [`api/[...path].ts`](./api/%5B...path%5D.ts); [`src/server.ts`](./src/server.ts) is for local/long-running Node hosting and is not the Vercel entrypoint. The catch-all function keeps the existing `/api/v1` and `/api/auth` paths.
+Create a Render Web Service using `backend` as its root directory. Use Node.js 20 or newer, `npm ci && npm run build` as the build command, and `npm start` as the start command. The long-running server reads Render's `PORT`, connects to Neon, and starts the email notification worker. The frontend remains a separate Vercel project.
 
-The build generates Prisma Client and compiles TypeScript without connecting to PostgreSQL or applying migrations. Set the existing Neon connection as `DATABASE_URL`; use its pooled URL for serverless runtime connections. Do not run `prisma migrate deploy`, `db push`, or seed commands in the build. Review and back up the existing database before manually applying checked-in migrations; use a direct Neon connection for migration commands if the pooler rejects them.
+The build generates Prisma Client and compiles TypeScript without connecting to PostgreSQL or applying migrations. Set the existing Neon connection as `DATABASE_URL`. Do not run `db push` or seed commands in the build. Review and back up the existing database before applying checked-in migrations; use a direct Neon connection for migration commands if the pooler rejects them. The file-storage removal migration preserves `JobApplication` rows while removing resume references and media metadata tables.
 
-Configure these Vercel Production environment variables:
+Configure these Render environment variables:
 
 - `NODE_ENV=production`, `DATABASE_URL`, `FRONTEND_URL`, `BACKEND_URL`, and `TRUST_PROXY_HOPS=1`.
 - `CORS_ORIGINS` as a comma-separated list of any additional exact frontend origins (no wildcard).
-- `CRON_SECRET` as a randomly generated value of at least 32 characters.
-- `STORAGE_PROVIDER=s3`, `STORAGE_BUCKET`, `STORAGE_REGION`, and the required storage credentials. Production intentionally rejects local filesystem storage.
+- `CRON_SECRET` as a randomly generated value of at least 32 characters; production environment validation requires it.
 - For enquiry/password-reset email: `EMAIL_PROVIDER=resend`, `EMAIL_API_KEY`, `EMAIL_FROM`, and `ENQUIRY_RECEIVER_EMAIL`.
-- Configure Google/Apple credentials if those login providers are enabled. Register callbacks using the Vercel backend origin: `${BACKEND_URL}/api/auth/oauth/<provider>/callback`.
+- Configure Google/Apple credentials if those login providers are enabled. Register callbacks using the Render backend origin: `${BACKEND_URL}/api/auth/oauth/<provider>/callback`.
 
-The checked-in [`vercel.json`](./vercel.json) schedules notification retries once per day, which is supported on Vercel Hobby. Vercel Pro supports per-minute schedules; change the cron expression if faster retries are needed. New notification attempts are also started after the submitting request returns. Align the function region with the Neon region to reduce database latency. Vercel's in-memory rate limiter is per function instance, so use a shared rate-limit store if abuse resistance must remain consistent across scaled instances.
+The repository retains an optional Vercel function adapter in [`api/[...path].ts`](./api/%5B...path%5D.ts) and [`vercel.json`](./vercel.json); Render uses [`src/server.ts`](./src/server.ts) instead. If using the Vercel adapter, its scheduled retry endpoint requires `CRON_SECRET`. Render's persistent worker retries notifications without relying on the Vercel cron.
 
-The backend uses database-backed opaque session cookies, not JWT bearer tokens; there is no `JWT_SECRET` setting to configure. Keep the frontend as a separate Vercel project rooted at `scarface-frontend` and set its `VITE_API_BASE_URL` to the backend origin. Set `FRONTEND_URL` to the exact frontend origin. `CORS_ORIGINS` can contain additional preview/custom origins. Apply migrations manually and verify the existing Neon database remains intact. Configure backups, monitoring, and PII-safe log retention; admin APIs are not implemented or exposed.
+The backend uses database-backed opaque session cookies, not JWT bearer tokens; there is no `JWT_SECRET` setting to configure. Keep the frontend as a separate Vercel project rooted at `scarface-frontend` and set its `VITE_API_BASE_URL` to the Render backend origin. Set `FRONTEND_URL` to the exact frontend origin. `CORS_ORIGINS` can contain additional preview/custom origins. Apply migrations manually and verify the existing Neon database remains intact. Configure backups, monitoring, and PII-safe log retention; admin APIs are not implemented or exposed.

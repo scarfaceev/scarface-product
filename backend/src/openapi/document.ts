@@ -3,7 +3,7 @@ export const openApiDocument = {
   info: {
     title: "ScarfaceEV API",
     version: "1.0.0",
-    description: "Public enquiry, product, installation, careers, CMS, and public-media endpoints. Administrative APIs are not enabled until authentication is integrated.",
+    description: "Public enquiry, product, installation, careers, and CMS endpoints. Administrative APIs are not enabled until authentication is integrated.",
   },
   servers: [{ url: "/api/v1" }],
   tags: [
@@ -13,7 +13,6 @@ export const openApiDocument = {
     { name: "Installations" },
     { name: "Jobs" },
     { name: "Content" },
-    { name: "Media" },
   ],
   paths: {
     "/health": {
@@ -139,30 +138,28 @@ export const openApiDocument = {
     "/jobs/applications": {
       post: {
         tags: ["Jobs"],
-        summary: "Submit a job application with a private PDF resume",
+        summary: "Submit a text-based job application",
         requestBody: {
           required: true,
           content: {
-            "multipart/form-data": {
+            "application/json": {
               schema: {
                 type: "object",
-                required: ["jobId", "applicantName", "email", "phone", "resume"],
+                required: ["jobId", "applicantName", "email", "phone"],
                 properties: {
                   jobId: { type: "string", format: "uuid" },
                   applicantName: { type: "string" },
                   email: { type: "string", format: "email" },
                   phone: { type: "string" },
                   coverLetter: { type: "string" },
-                  resume: { type: "string", format: "binary" },
                 },
               },
             },
           },
         },
         responses: {
-          "201": { description: "Application was stored; the resume is not publicly accessible." },
-          "400": { description: "Invalid application or resume." },
-          "413": { description: "Resume exceeds the configured size limit." },
+          "201": { description: "Application was stored." },
+          "400": { description: "Invalid application." },
         },
       },
     },
@@ -183,14 +180,6 @@ export const openApiDocument = {
         summary: "Get a published CMS page and ordered sections",
         parameters: [{ in: "path", name: "slug", required: true, schema: { type: "string" } }],
         responses: { "200": { description: "Published page." }, "404": { description: "Page not found." } },
-      },
-    },
-    "/media/{id}": {
-      get: {
-        tags: ["Media"],
-        summary: "Retrieve public media by UUID",
-        parameters: [{ in: "path", name: "id", required: true, schema: { type: "string", format: "uuid" } }],
-        responses: { "200": { description: "Public media asset." }, "404": { description: "Media not found or private." } },
       },
     },
   },

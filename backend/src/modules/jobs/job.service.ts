@@ -1,9 +1,8 @@
-import type { JobStatus, PrismaClient } from "@prisma/client";
+import type { ApplicationStatus, JobStatus, PrismaClient } from "@prisma/client";
 import { env } from "../../config/env.js";
 import { AppError } from "../../utils/app-error.js";
 import { NotificationService } from "../notifications/notification.service.js";
-import type { IncomingFile } from "../media/media.service.js";
-import type { JobWriteInput } from "./job.schemas.js";
+import type { JobApplicationInput, JobWriteInput } from "./job.schemas.js";
 
 export class JobService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -53,60 +52,52 @@ export class JobService {
 export class JobApplicationService {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly media: import("../media/media.service.js").MediaService,
     private readonly notifications: NotificationService,
   ) {}
 
-  async create(input: import("./job.schemas.js").JobApplicationInput, file: IncomingFile) {
+  async create(input: JobApplicationInput) {
     const job = await this.prisma.job.findFirst({
       where: { id: input.jobId, status: "PUBLISHED" },
       select: { id: true },
     });
     if (!job) throw new AppError(404, "JOB_NOT_FOUND", "The requested job was not found.");
 
-    const resume = await this.media.storePrivateResume(file);
-    try {
-      return await this.prisma.$transaction(async (transaction) => {
-        const application = await transaction.jobApplication.create({
+    return this.prisma.$transaction(async (transaction) => {
+      const application = await transaction.jobApplication.create({
+        data: {
+          jobId: job.id,
+          applicantName: input.applicantName,
+          email: input.email,
+          phone: input.phone,
+          coverLetter: input.coverLetter,
+        },
+      });
+      await this.notifications.enqueueCompanyNotification(
+        transaction,
+        "JOB_APPLICATION_ADMIN",
+        { jobApplicationId: application.id },
+        application.id,
+      );
+      if (env.SEND_CUSTOMER_ACK) {
+        await transaction.notificationOutbox.create({
           data: {
-            jobId: job.id,
-            applicantName: input.applicantName,
-            email: input.email,
-            phone: input.phone,
-            coverLetter: input.coverLetter,
-            resumeMediaId: resume.id,
+            type: "JOB_APPLICATION_ACK",
+            recipient: application.email,
+            dedupeKey: `JOB_APPLICATION_ACK:${application.id}:customer`,
+            jobApplicationId: application.id,
           },
         });
-        await this.notifications.enqueueCompanyNotification(
-          transaction,
-          "JOB_APPLICATION_ADMIN",
-          { jobApplicationId: application.id },
-          application.id,
-        );
-        if (env.SEND_CUSTOMER_ACK) {
-          await transaction.notificationOutbox.create({
-            data: {
-              type: "JOB_APPLICATION_ACK",
-              recipient: application.email,
-              dedupeKey: `JOB_APPLICATION_ACK:${application.id}:customer`,
-              jobApplicationId: application.id,
-            },
-          });
-        }
-        return application;
-      });
-    } catch (error) {
-      await this.media.deleteUnattachedAsset(resume.id);
-      throw error;
-    }
+      }
+      return application;
+    });
   }
 
-  listForAdmin(status: import("@prisma/client").ApplicationStatus | undefined, page: number, pageSize: number) {
+  listForAdmin(status: ApplicationStatus | undefined, page: number, pageSize: number) {
     const where = status ? { status } : {};
     return Promise.all([
       this.prisma.jobApplication.findMany({
         where,
-        include: { job: true, resume: true },
+        include: { job: true },
         orderBy: { submittedAt: "desc" },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -115,7 +106,7 @@ export class JobApplicationService {
     ]);
   }
 
-  updateStatusForAdmin(id: string, status: import("@prisma/client").ApplicationStatus) {
+  updateStatusForAdmin(id: string, status: ApplicationStatus) {
     return this.prisma.jobApplication.update({ where: { id }, data: { status } });
   }
 }

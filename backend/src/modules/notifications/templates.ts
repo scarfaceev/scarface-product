@@ -70,7 +70,7 @@ export function renderNotification(notification: NotificationWithData) {
         ["Applicant", application.applicantName],
         ["Email", application.email],
         ["Phone", application.phone],
-      ])}\n\nThe resume is stored privately and is not attached to this email.`;
+      ])}`;
     }
   }
 
